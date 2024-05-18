@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://2gwa6sub4sif"]
+
+[ext_resource type="PackedScene" uid="uid://bhtmgw6b65gyn" path="res://GameSystems/game_controller.tscn" id="1_ik4n3"]
+[ext_resource type="PackedScene" uid="uid://bypc3brtsj2km" path="res://GameSystems/enemy_controller.tscn" id="2_iwkf5"]
+[ext_resource type="Environment" uid="uid://uwen4m4ikapx" path="res://WorldScenes/default_world_environment.tres" id="3_nvnpt"]
+[ext_resource type="PackedScene" uid="uid://bp1aq8spd4jip" path="res://Player/player.tscn" id="4_fd3b2"]
+
+[node name="TestWorld" type="Node3D"]
+
+[node name="GameController" parent="." instance=ExtResource("1_ik4n3")]
+
+[node name="EnemyController" parent="." instance=ExtResource("2_iwkf5")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("3_nvnpt")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.58203, 0, -0.719299)
+use_collision = true
+size = Vector3(60.1641, 1, 76.955)
+
+[node name="Player" parent="." instance=ExtResource("4_fd3b2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.799687, 0)

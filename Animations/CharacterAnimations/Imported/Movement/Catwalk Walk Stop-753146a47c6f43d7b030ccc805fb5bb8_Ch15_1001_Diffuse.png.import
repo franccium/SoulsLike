@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://be6tmgmbmckqt"
+path.s3tc="res://.godot/imported/Catwalk Walk Stop-753146a47c6f43d7b030ccc805fb5bb8_Ch15_1001_Diffuse.png-a6c8fcf104615b8f6fb3c8416e8db57b.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "3200e2311abdb6fab41d888f2690dfd1"
+}
+
+[deps]
+
+source_file="res://Animations/CharacterAnimations/Imported/Movement/Catwalk Walk Stop-753146a47c6f43d7b030ccc805fb5bb8_Ch15_1001_Diffuse.png"
+dest_files=["res://.godot/imported/Catwalk Walk Stop-753146a47c6f43d7b030ccc805fb5bb8_Ch15_1001_Diffuse.png-a6c8fcf104615b8f6fb3c8416e8db57b.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

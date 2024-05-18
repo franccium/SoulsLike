@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://baqbenw3ivaw0"
+path.s3tc="res://.godot/imported/Catwalk Walk Forward-0ae2cf1f79526d28e24460476605570e_ao_met_rough_Ch15_1002_Glossiness.png-6a2e42f1659d1ea7b73ca5f8cfa5aaeb.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "8b34b584bdc98d3b34921fa7518f6370"
+}
+
+[deps]
+
+source_file="res://Animations/CharacterAnimations/Imported/Movement/Catwalk Walk Forward-0ae2cf1f79526d28e24460476605570e_ao_met_rough_Ch15_1002_Glossiness.png"
+dest_files=["res://.godot/imported/Catwalk Walk Forward-0ae2cf1f79526d28e24460476605570e_ao_met_rough_Ch15_1002_Glossiness.png-6a2e42f1659d1ea7b73ca5f8cfa5aaeb.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
