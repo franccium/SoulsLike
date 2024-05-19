@@ -1,0 +1,4 @@
+[gd_resource type="AnimationNodeAnimation" format=3 uid="uid://ythujxg2joxc"]
+
+[resource]
+animation = &"ImportedLibrary/sword_and_shield_walk_1"

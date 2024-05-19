@@ -3,8 +3,14 @@ using System;
 
 public partial class GameController : Node
 {
+    public static GameController Instance { get; private set; }
+
+    private Player _player;
+
 	public override void _Ready()
 	{
+        Instance = this;
+
         Input.MouseMode = Input.MouseModeEnum.Captured;
     }
 
@@ -26,4 +32,8 @@ public partial class GameController : Node
             }
         }
     }
+
+    public void SetPlayer(Player player) => _player = player;
+
+    public Player GetPlayer() => _player;
 }

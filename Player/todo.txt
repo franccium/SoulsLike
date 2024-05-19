@@ -1,0 +1,4 @@
+miecz jako Sword ktory jest nodem i ma swoj 
+collisino shape i jest pewnie body, wtedy mam hitboxarea prosta 
+kolizje z nim do zrobienia, niewazne w jakiej animacji
+ew. bone attachment hitbox czy cos

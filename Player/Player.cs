@@ -1,58 +1,63 @@
 using Godot;
 using System;
 
-public partial class Player : CharacterBody3D
+public partial class Player : Human
 {
     private Node3D _cameraContainer;
+    private Node3D _cameraPivot;
     
-    private AnimationTree _animationTree;
-    private const float TransitionSpeed = 0.1f;
-    private const float PlayerSpeed = 5.0f;
-    private const float RotationSpeed = 10;
-    private const float JumpVelocity = 4.5f;
-
     public bool allowVelocityRotation = true;
 
-    public float gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+    private bool _shiftModifier = false;
+    private bool _altModifier = false;
 
-    private Vector2 currentInput = Vector2.Zero;
-    private Vector2 currentVelocity = Vector2.Zero;
+    private Vector2 _currentInput = Vector2.Zero;
 
-    private bool jumpQueued = false;
-    private bool falling = false;
-
-
-    private string _locomotionBlendPath = "parameters/LocomotionStateMachine";
-    private string _locomotionStatePlaybackPath = "parameters/LocomotionStateMachine/playback";
-    private string _jumpStateName = "jump";
-    private string _fallingStateName = "fall";
-    private string _walkingStateName = "walk";
-
-    private string _upperBodyBlendPath = "parameters/UpperBodyStateMachine";
-    private string _upperBodyStatePlaybackPath = "parameters/UpperBodyStateMachine/playback";
-    
-    private string sheathWeaponStateName = "sword_sheath_2";
+    AnimationNodeStateMachinePlayback _upperBodyStateMachinePlayback;
+    AnimationNodeStateMachinePlayback _locomotionStateMachinePlayback;
 
     public override void _Ready()
     {
+        base._Ready();
+
         _cameraContainer = GetNode<Node3D>("CameraController/CameraContainer");
+        _cameraPivot = _cameraContainer.GetNode<Node3D>("CameraPivot");
         _animationTree = GetNode<AnimationTree>("AnimationTree");
+
+        _upperBodyStateMachinePlayback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_upperBodyStatePlaybackPath);
+        _locomotionStateMachinePlayback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_locomotionStatePlaybackPath);
+
+        GatherCombatRequirements();
+
+        GameController.Instance.SetPlayer(this);
     }
 
     public override void _Process(double delta)
     {
-        Vector2 newDelta = currentInput - currentVelocity;
-        if (newDelta.Length() > TransitionSpeed * (float)delta)
-        {
-            newDelta = newDelta.Normalized() * TransitionSpeed * (float)delta;
-        }
-        currentVelocity += newDelta;
+        _current2DDirection = _currentInput;
 
-        _animationTree.Set(_locomotionBlendPath, currentVelocity);
+        base._Process(delta);
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        Vector3 velocity = Velocity;
+
+        UpdateGroundedStateMovement(ref velocity, (float)delta);
+
+        UpdateInputMovement(ref velocity, (float)delta);
+
+        UpdateRotation((float)delta);
+
+        Velocity = velocity;
+        MoveAndSlide();
     }
 
     public override void _Input(InputEvent @event)
     {
+        _shiftModifier = Input.IsActionPressed("shift_modifier");
+        _altModifier = Input.IsActionPressed("alt_modifier");
+
         if (IsOnFloor())
         {
             if(Input.IsActionJustPressed("jump"))
@@ -67,95 +72,108 @@ public partial class Player : CharacterBody3D
 
         if (Input.IsActionJustPressed("sheath_weapon"))
         {
-            var playback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_upperBodyStatePlaybackPath);
-            playback.Travel(sheathWeaponStateName);
+            if(_combatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
+            {
+                _swordCombatComponent.UnequipWeaponRightHand();
+            }
+            else if(_combatState == CombatComponent.CombatStates.SwordSheathed)
+            {
+                _swordCombatComponent.EquipWeaponRightHand();
+            }
         }
 
         if (Input.IsActionJustPressed("toggle_two_hand"))
         {
         }
-    }
 
-    private void DodgeRoll()
-    {
-        GD.Print("Dodge Roll");
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        Vector3 velocity = Velocity;
-
-        if (!IsOnFloor())
+        if(Input.IsActionJustPressed("lmb"))
         {
-            velocity.Y -= gravity * (float)delta;
-            jumpQueued = false;
-            if (!falling)
+            if(isStaggered())
             {
-                falling = true;
-                var playback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_locomotionStatePlaybackPath);
-                playback.Travel(_fallingStateName);
+                return;
+            }
+
+            if(_combatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
+            {
+                StringName currentAnimation = _upperBodyStateMachinePlayback.GetCurrentNode().ToString();
+                if(currentAnimation == _swordCombatComponent.OneHandAttackName)
+                {
+                    _swordCombatComponent.OneHandAltAttackSword();
+                    return;
+                }
+                else if(currentAnimation == _swordCombatComponent.AltOneHandAttackName)
+                {
+                    _swordCombatComponent.StrongOneHandAttackSword();
+                    return;
+                }
+
+                if(_shiftModifier)
+                {
+                    if(_altModifier)
+                    {
+                        _swordCombatComponent.StrongAltOneHandAttackSword();
+                    }
+                    else
+                    {
+                        _swordCombatComponent.StrongOneHandAttackSword();
+                    }
+                }
+                else if(_altModifier)
+                {
+                    _swordCombatComponent.OneHandAltAttackSword();
+                }
+                else
+                {
+                    _swordCombatComponent.OneHandAttackSword();
+                }
             }
         }
-        else if (falling)
-        {
-            falling = false;
-            var playback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_locomotionStatePlaybackPath);
-            playback.Travel(_walkingStateName);
-        }
+    }
 
-        // Putting it after the falling handler makes sure that the transition doesn't
-        // automatically force it into a falling animation instead of letting the jump animation
-        // naturally finish.
+    #region MOVEMENT
 
-        if (jumpQueued)
-        {
-            velocity.Y = JumpVelocity;
-            jumpQueued = false;
-            falling = true;
-        }
-
-        // Get the input direction and handle the movement/deceleration.
-        // As good practice, you should replace UI actions with custom gameplay actions.
-        currentInput = Input.GetVector("left", "right", "forward", "backwards");
-        Vector3 direction = (_cameraContainer.Transform.Basis * new Vector3(currentInput.X, 0, currentInput.Y)).Normalized();
+    private void UpdateInputMovement(ref Vector3 velocity, float delta)
+    {
+        _currentInput = Input.GetVector("left", "right", "forward", "backwards");
+        // input direction responsive to the direction the player's camera is facing
+        Vector3 direction = -(_cameraPivot.Transform.Basis * new Vector3(_currentInput.X, 0, _currentInput.Y)).Normalized();
         if (direction != Vector3.Zero)
         {
-            velocity.X = direction.X * PlayerSpeed;
-            velocity.Z = direction.Z * PlayerSpeed;
+            velocity.X = direction.X * HumanSpeed;
+            velocity.Z = direction.Z * HumanSpeed;
             Vector3 currentNormalizedVelocity = ToLocal(GlobalPosition + velocity);
-            currentInput = new Vector2(currentNormalizedVelocity.X, currentNormalizedVelocity.Z).LimitLength(1);
+            _currentInput = new Vector2(currentNormalizedVelocity.X, currentNormalizedVelocity.Z).LimitLength(1);
         }
         else
         {
-            velocity.X = Mathf.MoveToward(Velocity.X, 0, PlayerSpeed);
-            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, PlayerSpeed);
+            velocity.X = Mathf.MoveToward(Velocity.X, 0, HumanSpeed);
+            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, HumanSpeed);
 
-            currentInput = Vector2.Zero;
+            _currentInput = Vector2.Zero;
         }
+    }
 
-        Velocity = velocity;
-
+    private void UpdateRotation(float delta)
+    {
         if (allowVelocityRotation)
         {
             if (Velocity.Length() > 0.1f)
             {
                 RotationDegrees = new Vector3(
                     RotationDegrees.X,
-                    Mathf.RadToDeg(Mathf.LerpAngle(Mathf.DegToRad(RotationDegrees.Y), Mathf.Atan2(-Velocity.X, -Velocity.Z), (float)delta * RotationSpeed)),
+                    Mathf.Floor(Mathf.RadToDeg(Mathf.LerpAngle(Mathf.DegToRad(RotationDegrees.Y), Mathf.Atan2(-Velocity.X, -Velocity.Z), delta * RotationSpeed))),
                     RotationDegrees.Z
-                    );
+                );
             }
         }
         else
         {
             RotationDegrees = new Vector3(
-                    RotationDegrees.X,
-                    _cameraContainer.RotationDegrees.Y,
-                    RotationDegrees.Z
-                    );
+                RotationDegrees.X,
+                _cameraContainer.RotationDegrees.Y,
+                RotationDegrees.Z
+            );
         }
-
-        MoveAndSlide();
     }
 
     public void DisableVelocityRotation()
@@ -168,14 +186,16 @@ public partial class Player : CharacterBody3D
         allowVelocityRotation = true;
     }
 
-    private void BeginJump()
+    #endregion
+
+    #region COMBAT
+
+    protected override void GatherCombatRequirements()
     {
-        var playback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_locomotionStatePlaybackPath);
-        playback.Travel(_jumpStateName);
+        base.GatherCombatRequirements();
+
+        _swordCombatComponent.EquippedSword.IsOwnedByPlayer = true;
     }
 
-    public void ExecuteJumpVelocity()
-    {
-        jumpQueued = true;
-    }
+    #endregion
 }

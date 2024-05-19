@@ -1,0 +1,266 @@
+[gd_resource type="AnimationNodeBlendTree" load_steps=67 format=3 uid="uid://cbv8xrvtubn05"]
+
+[ext_resource type="AnimationNodeBlendSpace2D" uid="uid://ddv58naxb0eh2" path="res://Player/player_walking_2d_blend_space.tres" id="1_ob716"]
+
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_r2gys"]
+filter_enabled = true
+filters = ["%GeneralSkeleton:Chest", "%GeneralSkeleton:Head", "%GeneralSkeleton:LeftHand", "%GeneralSkeleton:LeftIndexDistal", "%GeneralSkeleton:LeftIndexIntermediate", "%GeneralSkeleton:LeftIndexProximal", "%GeneralSkeleton:LeftLittleDistal", "%GeneralSkeleton:LeftLittleIntermediate", "%GeneralSkeleton:LeftLittleProximal", "%GeneralSkeleton:LeftLowerArm", "%GeneralSkeleton:LeftMiddleDistal", "%GeneralSkeleton:LeftMiddleIntermediate", "%GeneralSkeleton:LeftMiddleProximal", "%GeneralSkeleton:LeftRingDistal", "%GeneralSkeleton:LeftRingIntermediate", "%GeneralSkeleton:LeftRingProximal", "%GeneralSkeleton:LeftShoulder", "%GeneralSkeleton:LeftThumbDistal", "%GeneralSkeleton:LeftThumbMetacarpal", "%GeneralSkeleton:LeftThumbProximal", "%GeneralSkeleton:LeftUpperArm", "%GeneralSkeleton:Neck", "%GeneralSkeleton:RightHand", "%GeneralSkeleton:RightIndexDistal", "%GeneralSkeleton:RightIndexIntermediate", "%GeneralSkeleton:RightIndexProximal", "%GeneralSkeleton:RightLittleDistal", "%GeneralSkeleton:RightLittleIntermediate", "%GeneralSkeleton:RightLittleProximal", "%GeneralSkeleton:RightLowerArm", "%GeneralSkeleton:RightMiddleDistal", "%GeneralSkeleton:RightMiddleIntermediate", "%GeneralSkeleton:RightMiddleProximal", "%GeneralSkeleton:RightRingDistal", "%GeneralSkeleton:RightRingIntermediate", "%GeneralSkeleton:RightRingProximal", "%GeneralSkeleton:RightShoulder", "%GeneralSkeleton:RightThumbDistal", "%GeneralSkeleton:RightThumbMetacarpal", "%GeneralSkeleton:RightThumbProximal", "%GeneralSkeleton:RightUpperArm", "%GeneralSkeleton:UpperChest", "%GeneralSkeleton:mixamorig_LeftHandIndex1", "%GeneralSkeleton:mixamorig_LeftHandMiddle1", "%GeneralSkeleton:mixamorig_LeftHandPinky1", "%GeneralSkeleton:mixamorig_LeftHandRing1", "%GeneralSkeleton:mixamorig_LeftHandThumb1", "%GeneralSkeleton:mixamorig_RightHandIndex1", "%GeneralSkeleton:mixamorig_RightHandMiddle1", "%GeneralSkeleton:mixamorig_RightHandPinky1", "%GeneralSkeleton:mixamorig_RightHandRing1", "%GeneralSkeleton:mixamorig_RightHandThumb1"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_xksdi"]
+animation = &"ImportedLibrary/catwalk_walk_stop"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ydqdl"]
+animation = &"ImportedLibrary/falling_to_roll"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_u1y81"]
+animation = &"ImportedLibrary/jump"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_fx00p"]
+animation = &"ImportedWeaponLibrary/sword_and_shield_jump_1"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_j2hur"]
+animation = &"ImportedLibrary/sword_and_shield_slash_2"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ti2h4"]
+animation = &"ImportedLibrary/sword_and_shield_slash_3"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_o61v3"]
+animation = &"ImportedLibrary/sword_and_shield_strafe_left"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_eile6"]
+animation = &"ImportedLibrary/sword_and_shield_strafe_right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_wecux"]
+animation = &"ImportedLibrary/sword_and_shield_walk_2"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mbklm"]
+animation = &"ImportedLibrary/sword_and_shield_walk_1"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_hd4md"]
+animation = &"ImportedLibrary/sword_and_shield_idle"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_f3n5c"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_o61v3")
+blend_point_0/pos = Vector2(-1, 0)
+blend_point_1/node = SubResource("AnimationNodeAnimation_eile6")
+blend_point_1/pos = Vector2(1, 0)
+blend_point_2/node = SubResource("AnimationNodeAnimation_wecux")
+blend_point_2/pos = Vector2(0, -1)
+blend_point_3/node = SubResource("AnimationNodeAnimation_mbklm")
+blend_point_3/pos = Vector2(0, 1)
+blend_point_4/node = SubResource("AnimationNodeAnimation_hd4md")
+blend_point_4/pos = Vector2(0, 0)
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_lnnwx"]
+xfade_time = 0.2
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_xs127"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_lwadx"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_8rrt5"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_erhom"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_tor11"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_i01e4"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_e0avc"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_rwmcp"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_y1we7"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_fkecc"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_syl65"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_m01qm"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_4k8yb"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_gncfl"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_jahgd"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_uwp2r"]
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_puqt4"]
+states/Start/position = Vector2(-75, 145)
+states/catwalk_walk_stop/node = SubResource("AnimationNodeAnimation_xksdi")
+states/catwalk_walk_stop/position = Vector2(0, 330)
+states/fall/node = SubResource("AnimationNodeAnimation_ydqdl")
+states/fall/position = Vector2(526, 380)
+states/jump/node = SubResource("AnimationNodeAnimation_u1y81")
+states/jump/position = Vector2(724, 255)
+states/sword_and_shield_jump_1/node = SubResource("AnimationNodeAnimation_fx00p")
+states/sword_and_shield_jump_1/position = Vector2(672, 89)
+states/sword_and_shield_slash_2/node = SubResource("AnimationNodeAnimation_j2hur")
+states/sword_and_shield_slash_2/position = Vector2(206, -226)
+states/sword_and_shield_slash_3/node = SubResource("AnimationNodeAnimation_ti2h4")
+states/sword_and_shield_slash_3/position = Vector2(-11, -173)
+states/sword_and_shield_walk_and_strafe/node = SubResource("AnimationNodeBlendSpace2D_f3n5c")
+states/sword_and_shield_walk_and_strafe/position = Vector2(157, -63)
+states/walk/node = ExtResource("1_ob716")
+states/walk/position = Vector2(174, 185)
+transitions = ["jump", "fall", SubResource("AnimationNodeStateMachineTransition_lnnwx"), "sword_and_shield_slash_2", "sword_and_shield_slash_3", SubResource("AnimationNodeStateMachineTransition_xs127"), "sword_and_shield_slash_3", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_lwadx"), "walk", "catwalk_walk_stop", SubResource("AnimationNodeStateMachineTransition_8rrt5"), "fall", "walk", SubResource("AnimationNodeStateMachineTransition_erhom"), "walk", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_tor11"), "walk", "jump", SubResource("AnimationNodeStateMachineTransition_i01e4"), "sword_and_shield_walk_and_strafe", "sword_and_shield_jump_1", SubResource("AnimationNodeStateMachineTransition_e0avc"), "sword_and_shield_jump_1", "fall", SubResource("AnimationNodeStateMachineTransition_rwmcp"), "fall", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_y1we7"), "Start", "walk", SubResource("AnimationNodeStateMachineTransition_fkecc"), "walk", "fall", SubResource("AnimationNodeStateMachineTransition_syl65"), "sword_and_shield_walk_and_strafe", "fall", SubResource("AnimationNodeStateMachineTransition_m01qm"), "sword_and_shield_slash_2", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_4k8yb"), "sword_and_shield_slash_3", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_gncfl"), "sword_and_shield_walk_and_strafe", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_jahgd"), "sword_and_shield_walk_and_strafe", "sword_and_shield_slash_3", SubResource("AnimationNodeStateMachineTransition_uwp2r")]
+graph_offset = Vector2(-296, 235)
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jt063"]
+animation = &"ImportedLibrary/catwalk_idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_uqc7u"]
+animation = &"ImportedLibrary/draw_sword_right_hip"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_dvmnq"]
+animation = &"ImportedLibrary/draw_sword_left_hip"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_yh01i"]
+animation = &"ImportedWeaponLibrary/sword_and_shield_attack_2"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_rfuwn"]
+animation = &"ImportedWeaponLibrary/sword_and_shield_attack_4"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_5ebqj"]
+animation = &"ImportedWeaponLibrary/sword_and_shield_attack_5"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ef20s"]
+animation = &"ImportedLibrary/sword_and_shield_idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_s8apa"]
+animation = &"ImportedLibrary/sword_and_shield_slash_2"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_267od"]
+animation = &"ImportedLibrary/sword_sheath_2"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_xlhgv"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_dvrqp"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_w1tfi"]
+xfade_time = 0.1
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_oiq53"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_klk4p"]
+xfade_time = 0.1
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_arsfw"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_febep"]
+xfade_time = 0.05
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_0il32"]
+xfade_time = 0.05
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_fotxb"]
+xfade_time = 0.1
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_8t2pn"]
+xfade_time = 0.1
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_btfl2"]
+xfade_time = 0.05
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_qr4uw"]
+xfade_time = 0.05
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_dvf1u"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_brjhx"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_5gsly"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_hsjsn"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_eapnb"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_2frga"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_uiaau"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ubmn3"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_md83i"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_glc1g"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_v0jjq"]
+states/End/position = Vector2(305, 210)
+states/catwalk_idle/node = SubResource("AnimationNodeAnimation_jt063")
+states/catwalk_idle/position = Vector2(444, 55)
+states/draw_sword_left_hand/node = SubResource("AnimationNodeAnimation_uqc7u")
+states/draw_sword_left_hand/position = Vector2(659, 2)
+states/draw_sword_right_hand/node = SubResource("AnimationNodeAnimation_dvmnq")
+states/draw_sword_right_hand/position = Vector2(635, 71)
+states/sword_and_shield_attack_2/node = SubResource("AnimationNodeAnimation_yh01i")
+states/sword_and_shield_attack_2/position = Vector2(1179, 15)
+states/sword_and_shield_attack_4/node = SubResource("AnimationNodeAnimation_rfuwn")
+states/sword_and_shield_attack_4/position = Vector2(976, -94)
+states/sword_and_shield_attack_5/node = SubResource("AnimationNodeAnimation_5ebqj")
+states/sword_and_shield_attack_5/position = Vector2(869, 230)
+states/sword_and_shield_idle/node = SubResource("AnimationNodeAnimation_ef20s")
+states/sword_and_shield_idle/position = Vector2(874, 90)
+states/sword_and_shield_slash_2/node = SubResource("AnimationNodeAnimation_s8apa")
+states/sword_and_shield_slash_2/position = Vector2(1129, 158)
+states/sword_sheath_2/node = SubResource("AnimationNodeAnimation_267od")
+states/sword_sheath_2/position = Vector2(561, 186)
+transitions = ["Start", "catwalk_idle", SubResource("AnimationNodeStateMachineTransition_xlhgv"), "catwalk_idle", "sword_sheath_2", SubResource("AnimationNodeStateMachineTransition_dvrqp"), "sword_sheath_2", "catwalk_idle", SubResource("AnimationNodeStateMachineTransition_w1tfi"), "catwalk_idle", "draw_sword_left_hand", SubResource("AnimationNodeStateMachineTransition_oiq53"), "draw_sword_left_hand", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_klk4p"), "sword_and_shield_idle", "sword_sheath_2", SubResource("AnimationNodeStateMachineTransition_arsfw"), "sword_and_shield_idle", "sword_and_shield_attack_2", SubResource("AnimationNodeStateMachineTransition_febep"), "sword_and_shield_attack_2", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_0il32"), "catwalk_idle", "draw_sword_right_hand", SubResource("AnimationNodeStateMachineTransition_fotxb"), "draw_sword_right_hand", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_8t2pn"), "sword_and_shield_idle", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_btfl2"), "sword_and_shield_slash_2", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_qr4uw"), "sword_and_shield_attack_2", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_dvf1u"), "sword_and_shield_slash_2", "sword_and_shield_attack_2", SubResource("AnimationNodeStateMachineTransition_brjhx"), "sword_and_shield_attack_2", "sword_and_shield_attack_4", SubResource("AnimationNodeStateMachineTransition_5gsly"), "sword_and_shield_attack_4", "sword_and_shield_attack_2", SubResource("AnimationNodeStateMachineTransition_hsjsn"), "sword_and_shield_idle", "sword_and_shield_attack_4", SubResource("AnimationNodeStateMachineTransition_eapnb"), "sword_and_shield_attack_4", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_2frga"), "sword_and_shield_idle", "sword_and_shield_attack_5", SubResource("AnimationNodeStateMachineTransition_uiaau"), "sword_and_shield_attack_5", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_ubmn3"), "sword_and_shield_attack_5", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_md83i"), "sword_and_shield_slash_2", "sword_and_shield_attack_5", SubResource("AnimationNodeStateMachineTransition_glc1g")]
+graph_offset = Vector2(218, -19)
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_nfxg0"]
+animation = &"ImportedMovementLibrary/sword_and_shield_impact_2"
+
+[sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_3jvhy"]
+
+[resource]
+graph_offset = Vector2(-554.839, 33.2189)
+nodes/Blend2/node = SubResource("AnimationNodeBlend2_r2gys")
+nodes/Blend2/position = Vector2(80, 180)
+nodes/LocomotionStateMachine/node = SubResource("AnimationNodeStateMachine_puqt4")
+nodes/LocomotionStateMachine/position = Vector2(-200, 40)
+nodes/UpperBodyStateMachine/node = SubResource("AnimationNodeStateMachine_v0jjq")
+nodes/UpperBodyStateMachine/position = Vector2(-200, 320)
+nodes/output/position = Vector2(820, 160)
+nodes/stagger/node = SubResource("AnimationNodeAnimation_nfxg0")
+nodes/stagger/position = Vector2(-120, 520)
+nodes/stagger_oneshot/node = SubResource("AnimationNodeOneShot_3jvhy")
+nodes/stagger_oneshot/position = Vector2(460, 200)
+node_connections = [&"Blend2", 0, &"LocomotionStateMachine", &"Blend2", 1, &"UpperBodyStateMachine", &"output", 0, &"stagger_oneshot", &"stagger_oneshot", 0, &"Blend2", &"stagger_oneshot", 1, &"stagger"]

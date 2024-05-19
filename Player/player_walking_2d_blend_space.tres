@@ -1,0 +1,28 @@
+[gd_resource type="AnimationNodeBlendSpace2D" load_steps=6 format=3 uid="uid://ddv58naxb0eh2"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_h3b6j"]
+animation = &"ImportedLibrary/walk_left"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_lakmy"]
+animation = &"ImportedLibrary/catwalk_walk_forward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6dl11"]
+animation = &"ImportedLibrary/walk_right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mvw5h"]
+animation = &"ImportedLibrary/catwalk_walk_forward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_at575"]
+animation = &"old_man_idle"
+
+[resource]
+blend_point_0/node = SubResource("AnimationNodeAnimation_h3b6j")
+blend_point_0/pos = Vector2(-1, 0)
+blend_point_1/node = SubResource("AnimationNodeAnimation_lakmy")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_6dl11")
+blend_point_2/pos = Vector2(1, 0)
+blend_point_3/node = SubResource("AnimationNodeAnimation_mvw5h")
+blend_point_3/pos = Vector2(0, 1)
+blend_point_4/node = SubResource("AnimationNodeAnimation_at575")
+blend_point_4/pos = Vector2(0, 0)

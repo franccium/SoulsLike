@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://3go51o46ktmy"]
+
+[ext_resource type="Script" path="res://Components/SwordCombatComponent.cs" id="1_vueij"]
+
+[node name="SwordCombatComponent" type="Node"]
+script = ExtResource("1_vueij")
