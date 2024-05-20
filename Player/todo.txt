@@ -9,6 +9,10 @@ kolizje z nim do zrobienia, niewazne w jakiej animacji
 ew. bone attachment hitbox czy cos
 
 
+jak bedzie root motion to jakos to velocity floorowac zeby sie nie ruszal ciagle czy cos
+
+
+
 
 enemy ai
 

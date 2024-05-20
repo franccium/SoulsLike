@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://b77hp0uny8lvp"]
+
+[ext_resource type="PackedScene" uid="uid://ck5k3yqissi6v" path="res://Animations/RootMotionAnimations/swat_guy_root_motion.glb" id="1_a286u"]
+
+[node name="swat_guy_root_motion" instance=ExtResource("1_a286u")]

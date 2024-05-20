@@ -1,10 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://2gwa6sub4sif"]
+[gd_scene load_steps=5 format=3 uid="uid://2gwa6sub4sif"]
 
 [ext_resource type="PackedScene" uid="uid://bhtmgw6b65gyn" path="res://GameSystems/game_controller.tscn" id="1_ik4n3"]
 [ext_resource type="PackedScene" uid="uid://bypc3brtsj2km" path="res://GameSystems/enemy_controller.tscn" id="2_iwkf5"]
 [ext_resource type="Environment" uid="uid://uwen4m4ikapx" path="res://WorldScenes/default_world_environment.tres" id="3_nvnpt"]
 [ext_resource type="PackedScene" uid="uid://bp1aq8spd4jip" path="res://Player/player.tscn" id="4_fd3b2"]
-[ext_resource type="PackedScene" uid="uid://bllblrio32its" path="res://Enemies/TestEnemy/test_enemy.tscn" id="5_e64bp"]
 
 [node name="TestWorld" type="Node3D"]
 
@@ -22,9 +21,6 @@ size = Vector3(60.1641, 1, 76.955)
 
 [node name="Player" parent="." instance=ExtResource("4_fd3b2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.04686, 0.5, -3.01489)
-
-[node name="TestEnemy" parent="." instance=ExtResource("5_e64bp")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.60185, 0.500001, -2.74836)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -95.0075, 171.398, 265.99)

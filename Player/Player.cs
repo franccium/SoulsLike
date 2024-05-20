@@ -45,12 +45,43 @@ public partial class Player : Human
 
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
-        UpdateInputMovement(ref velocity, (float)delta);
-
         UpdateRotation((float)delta);
 
+        if(CurrentAnimationState != AnimationStates.Idle)
+        {
+            UpdateAnimationRootMotion(ref velocity, (float)delta);
+        }
+        else
+        {
+            UpdateInputMovement(ref velocity, (float)delta);
+        }
+
         Velocity = velocity;
+
         MoveAndSlide();
+    }
+
+    private void UpdateMovementRoot(float delta)
+    {
+        //! have to turn of _process
+        Vector3 velocity = Velocity;
+        var direction = new Vector3(Input.GetActionStrength("left") - Input.GetActionStrength("right"), 0, Input.GetActionStrength("forward") - Input.GetActionStrength("backwards"));
+        direction = direction.Rotated(Vector3.Up, _cameraContainer.GlobalTransform.Basis.GetEuler().Y).Normalized();
+
+        _animationTree.Set(_locomotionBlendPath, new Vector2(0, -1));
+
+        if (direction != Vector3.Zero)
+            Rotation = new Vector3(Rotation.X, Mathf.Atan2(-direction.X, -direction.Z), Rotation.Z);
+
+        Quaternion currentRotation = Transform.Basis.GetRotationQuaternion();
+        GD.Print("current rotation: " + currentRotation);
+        GD.Print("root motion position: " + _animationTree.GetRootMotionPosition());
+
+        velocity = -(currentRotation.Normalized() * _animationTree.GetRootMotionPosition()) / delta;
+
+        Velocity = velocity;
+
+        GD.Print("Velocity: " + Velocity);
     }
 
     public override void _Input(InputEvent @event)
@@ -66,7 +97,14 @@ public partial class Player : Human
             }
             else if (Input.IsActionJustPressed("dodge"))
             {
-                DodgeRoll();
+                if(_shiftModifier)
+                {
+                    SideDodgeRoll();
+                }
+                else
+                {
+                    DodgeRoll();
+                }
             }
         }
 
@@ -107,9 +145,9 @@ public partial class Player : Human
                     return;
                 }
 
-                if(_shiftModifier)
+                if (_shiftModifier)
                 {
-                    if(_altModifier)
+                    if (_altModifier)
                     {
                         _swordCombatComponent.StrongAltOneHandAttackSword();
                     }
@@ -118,13 +156,15 @@ public partial class Player : Human
                         _swordCombatComponent.StrongOneHandAttackSword();
                     }
                 }
-                else if(_altModifier)
+                else if (_altModifier)
                 {
                     _swordCombatComponent.OneHandAltAttackSword();
                 }
                 else
                 {
                     _swordCombatComponent.OneHandAttackSword();
+                    _isAttacking = true;
+                    _rollDirection = _movementDirection;
                 }
             }
         }

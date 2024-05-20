@@ -6,7 +6,6 @@ public partial class Human : CharacterBody3D
     protected AnimationTree _animationTree;
     protected const float TransitionSpeed = 0.1f;
     protected const float RotationSpeed = 10;
-    protected const float JumpVelocity = 4.5f;
     protected float Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 
     protected static readonly StringName _locomotionStatePlaybackPath = "parameters/LocomotionStateMachine/playback";
@@ -27,12 +26,30 @@ public partial class Human : CharacterBody3D
 
     protected bool jumpQueued = false;
 
+    public enum AnimationStates
+    {
+        Idle,
+        Walking,
+        Running,
+        Jumping,
+        Falling,
+        Attacking,
+        DodgeRoll,
+        Stagger,
+    }
+
+    public AnimationStates CurrentAnimationState = AnimationStates.Idle;
+
+    protected float _currentSpeed = 0f;
+
     public override void _Ready()
     {
         _animationTree = GetNode<AnimationTree>("AnimationTree");
 
         _upperBodyStateMachinePlayback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_upperBodyStatePlaybackPath);
         _locomotionStateMachinePlayback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_locomotionStatePlaybackPath);
+
+        _animationTree.AnimationFinished += OnAnimationFinished;
 
         GatherCombatRequirements();
         GatherAttributeRequirements();
@@ -64,10 +81,43 @@ public partial class Human : CharacterBody3D
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
         //direction and 2D direction
+        if(CurrentAnimationState != AnimationStates.Idle)
+        {
+            UpdateAnimationRootMotion(ref velocity, (float)delta);
+        }
 
         Velocity = velocity;
 
         MoveAndSlide();
+    }
+
+    protected virtual void UpdateAnimationRootMotion(ref Vector3 velocity, float delta)
+    {
+        Vector3 rootMotionPosition = _animationTree.GetRootMotionPosition();
+
+        if (_rollDirection != Vector3.Zero)
+            Rotation = new Vector3(Rotation.X, Mathf.Atan2(-_rollDirection.X, -_rollDirection.Z), Rotation.Z);
+
+        Quaternion currentRotation = Transform.Basis.GetRotationQuaternion();
+
+        velocity = -(currentRotation.Normalized() * rootMotionPosition * _attributeComponent.RollSpeed) / delta;
+    }
+
+    protected virtual void OnAnimationFinished(StringName animName)
+    {
+        GD.Print("animation finished: " + animName);
+        
+        switch (CurrentAnimationState)
+        {
+            case AnimationStates.Attacking:
+                _isAttacking = false;
+                break;
+            case AnimationStates.DodgeRoll:
+                OnDodgeRollFinished();
+                break; 
+        }
+
+        CurrentAnimationState = AnimationStates.Idle;
     }
 
 
@@ -115,7 +165,7 @@ public partial class Human : CharacterBody3D
 
         if (jumpQueued)
         {
-            velocity.Y = JumpVelocity;
+            velocity.Y = _attributeComponent.JumpVelocity;
             jumpQueued = false;
             GroundedState = GroundedStates.Falling;
         }
@@ -161,16 +211,18 @@ public partial class Human : CharacterBody3D
         set => _combatComponent.CombatState = value;
     }
 
+    protected bool _isAttacking = false;
+
     protected static readonly StringName _staggerStateName = "stagger";
     protected static readonly StringName _staggerOneShotRequestPath = "parameters/stagger_oneshot/request";
     protected static readonly StringName _staggerOneShotIsActivePath = "parameters/stagger_oneshot/active";
 
     protected virtual void GatherCombatRequirements()
     {
-        _rightHandContainer = GetNode<Node3D>("CharacterRig/GeneralSkeleton/RightHandAttachment/RightHandContainer");
-        _leftHandContainer = GetNode<Node3D>("CharacterRig/GeneralSkeleton/LeftHandAttachment/LeftHandContainer");
-        _rightHipContainer = GetNode<Node3D>("CharacterRig/GeneralSkeleton/RightHipAttachment/RightHipContainer");
-        _leftHipContainer = GetNode<Node3D>("CharacterRig/GeneralSkeleton/LeftHipAttachment/LeftHipContainer");
+        _rightHandContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/RightHandAttachment/RightHandContainer");
+        _leftHandContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/LeftHandAttachment/LeftHandContainer");
+        _rightHipContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/RightHipAttachment/RightHipContainer");
+        _leftHipContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/LeftHipAttachment/LeftHipContainer");
 
         _rightHipItemContainer = _rightHipContainer.GetNode<Node3D>("ItemContainer");
         _leftHipItemContainer = _leftHipContainer.GetNode<Node3D>("ItemContainer");
@@ -216,14 +268,36 @@ public partial class Human : CharacterBody3D
     protected static readonly StringName _dodgeRollOneShotRequestPath = "parameters/dodge_roll_oneshot/request";
     protected static readonly StringName _dodgeRollOneShotIsActivePath = "parameters/dodge_roll_oneshot/active";
 
+    protected static readonly StringName _sideDodgeRollOneShotRequestPath = "parameters/side_dodge_roll_oneshot/request";
+    protected static readonly StringName _sideDodgeRollOneShotIsActivePath = "parameters/side_dodge_roll_oneshot/active";
+
     public bool IsInvincible = false;
+
+    protected Vector3 _rollDirection = Vector3.Zero;
+
+    protected virtual void GatherDodgerollRequirements()
+    {
+        _animationTree.Set("parameters/dodge_roll_time_scale/scale", _attributeComponent.RollTimeScale);
+        _animationTree.Set("parameters/side_dodge_roll_time_scale/scale", _attributeComponent.SideRollTimeScale);
+    }
 
     protected virtual void DodgeRoll()
     {
+        _rollDirection = _movementDirection;
         _animationTree.Set(_dodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
         GD.Print("dodge roll");
         //_hitboxArea.Monitoring = false; // wont work cause its the world collision shape that is being checked by swords area
         IsInvincible = true;
+        //Velocity = _movementDirection * _attributeComponent.RollSpeed;
+    }
+
+    protected virtual void SideDodgeRoll()
+    {
+        _rollDirection = _movementDirection;
+        _animationTree.Set(_sideDodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+        GD.Print("side dodge roll");
+        IsInvincible = true;
+        //Velocity = _movementDirection * _attributeComponent.RollSpeed;
     }
 
     // called by the dodge roll animation for now
@@ -232,9 +306,10 @@ public partial class Human : CharacterBody3D
         GD.Print("dodge roll finished");
         //_hitboxArea.Monitoring = true;
         IsInvincible = false;
+        _rollDirection = Vector3.Zero;
     }
 
-    public bool isRolling() => _animationTree.Get(_dodgeRollOneShotIsActivePath).AsBool();
+    public bool isRolling() => _animationTree.Get(_dodgeRollOneShotIsActivePath).AsBool() || _animationTree.Get(_sideDodgeRollOneShotIsActivePath).AsBool();
 
     #endregion
 
@@ -274,6 +349,8 @@ public partial class Human : CharacterBody3D
     protected virtual void GatherAttributeRequirements()
     {
         _attributeComponent = GetNode<AttributeComponent>("AttributeComponent");
+
+        GatherDodgerollRequirements();
     }
 
     /*
@@ -309,11 +386,14 @@ public partial class Human : CharacterBody3D
             return;
 
         _attributeComponent.Stamina -= damage;
+
+        GD.Print(_attributeComponent.Stamina);
         //_staminaBar
 
         if(Stamina <= 0)
         {
             Stagger();
+            _attributeComponent.Stamina = _attributeComponent.MaxStamina;
         }
     }
 

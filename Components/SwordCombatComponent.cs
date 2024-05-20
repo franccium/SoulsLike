@@ -29,7 +29,7 @@ public partial class SwordCombatComponent : CombatComponent
     public StringName StrongOneHandAttackName { get; set; } = "sword_and_shield_slash_2";
 
     public StringName AltOneHandAttackName { get; set; } = "sword_and_shield_attack_4";
-    public StringName StrongAltOneHandAttackName { get; set; } = "sword_and_shield_attack_5";
+    public StringName StrongAltOneHandAttackName { get; set; } = "sword_and_shield_slash_3";
 
     public StringName CombatWalkStateName { get; set; } = "sword_and_shield_walk_and_strafe";
     public StringName CombatJumpStateName { get; set; } = "sword_and_shield_jump_1";
@@ -48,6 +48,8 @@ public partial class SwordCombatComponent : CombatComponent
     public void SwordAttack(StringName attackName)
     {
         UpperBodyStateMachinePlayback.Travel(attackName);
+        LocomotionStateMachinePlayback.Travel(attackName);
+
         //? lowerBodyPlayback.Travel(_oneHandAttackName);
 
         EquippedSword.Attack();
