@@ -3,6 +3,8 @@ using System;
 
 public partial class Sword : Node3D
 {
+    private WeaponAttributesComponent _weaponAttributesComponent;
+
     private MeshInstance3D _sheathMesh;
     private MeshInstance3D _sheathMesh2;
 
@@ -18,11 +20,17 @@ public partial class Sword : Node3D
         _hitboxArea = GetNode<Area3D>("HitboxArea");
 
         _hitboxArea.BodyEntered += OnHitboxAreaBodyEntered;
+        _hitboxArea.Monitoring = false;
     }
 
 	public override void _Process(double delta)
 	{
 	}
+
+    public WeaponAttributesComponent GetStats()
+    {
+        return _weaponAttributesComponent;
+    }
 
     public void DrawWeapon()
     {
@@ -34,6 +42,18 @@ public partial class Sword : Node3D
     {
         _sheathMesh.Visible = true;
         _sheathMesh2.Visible = true;
+    }
+
+    public void Attack()
+    {
+        _hitboxArea.Monitoring = true;
+        //todo signal to end monitoring or a function or something
+    }
+
+    private void HitHuman(Human human)
+    {
+        human.TakeHealthDamage(_weaponAttributesComponent.Damage);
+        human.TakeStaminaDamage(_weaponAttributesComponent.StaminaDamage);
     }
 
     public void OnHitboxAreaBodyEntered(Node3D body)
@@ -49,7 +69,7 @@ public partial class Sword : Node3D
                 if(body is HumanEnemy enemy)
                 {
                     GD.Print("Sword hit enemy");
-                    enemy.Stagger();
+                    HitHuman(enemy);
                 }
             }
             else
@@ -57,7 +77,7 @@ public partial class Sword : Node3D
                 if(body is Player player)
                 {
                     GD.Print("Sword hit player");
-                    player.Stagger();
+                    HitHuman(player);
                 }
             }
         }

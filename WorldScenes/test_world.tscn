@@ -25,3 +25,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.04686, 0.5, -3.01489)
 
 [node name="TestEnemy" parent="." instance=ExtResource("5_e64bp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.60185, 0.500001, -2.74836)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -95.0075, 171.398, 265.99)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.6958, 0.71461, 3.44929)
+size = Vector3(8.55112, 0.32373, 8.26086)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.6958, 0.990611, 12.1311)
+size = Vector3(8.55112, 0.875732, 8.26086)

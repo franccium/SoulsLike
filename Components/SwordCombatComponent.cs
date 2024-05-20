@@ -45,36 +45,36 @@ public partial class SwordCombatComponent : CombatComponent
     {
     }
 
+    public void SwordAttack(StringName attackName)
+    {
+        UpperBodyStateMachinePlayback.Travel(attackName);
+        //? lowerBodyPlayback.Travel(_oneHandAttackName);
+
+        EquippedSword.Attack();
+    }
+
     public void OneHandAttackSword()
     {
         GD.Print("One Hand Attack");
-        UpperBodyStateMachinePlayback.Travel(OneHandAttackName);
-
-        //? lowerBodyPlayback.Travel(_oneHandAttackName);
+        SwordAttack(OneHandAttackName);
     }
 
     public void OneHandAltAttackSword()
     {
         GD.Print("One Hand Alt Attack");
-        UpperBodyStateMachinePlayback.Travel(AltOneHandAttackName);
-
-        //? lowerBodyPlayback.Travel(_altOneHandAttackName);
+        SwordAttack(AltOneHandAttackName);
     }
 
     public void StrongOneHandAttackSword()
     {
         GD.Print("Strong One Hand Attack");
-        UpperBodyStateMachinePlayback.Travel(StrongOneHandAttackName);
-
-        //? lowerBodyPlayback.Travel(_strongOneHandAttackName);
+        SwordAttack(StrongOneHandAttackName);
     }
 
     public void StrongAltOneHandAttackSword()
     {
         GD.Print("Strong Alt One Hand Attack");
-        UpperBodyStateMachinePlayback.Travel(StrongAltOneHandAttackName);
-
-        //? lowerBodyPlayback.Travel(_strongOneHandAttackName);
+        SwordAttack(StrongAltOneHandAttackName);
     }
 
     /// <summary>

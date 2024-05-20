@@ -1,4 +1,52 @@
+zalozenie:
+goofy souls-like z takim movementem jaki mi teraz wyszedl troche awkward i atakami full zaleznymi od animacji, 
+nie tak jak jest gracz przyzwyczajony, tylko faktycznie biegasz i wymachujesz mieczem jak kogosc trafisz to jest trafiony, 
+jak trafisz w solidny obiekt / bron / tarcze to miecz odskakuje
+
 miecz jako Sword ktory jest nodem i ma swoj 
 collisino shape i jest pewnie body, wtedy mam hitboxarea prosta 
 kolizje z nim do zrobienia, niewazne w jakiej animacji
 ew. bone attachment hitbox czy cos
+
+
+
+enemy ai
+
+wylaczanie hitboxa miecza po ataku
+
+dodge roll
+
+health / stamina bar
+
+odskakiwanie miecza
+
+tarcza
+
+druga bron
+
+testowy level z grafika sensowna
+
+
+ocenianie efektywnosci ataku (np biorac kat obrotu miecza do ciala, zeby nie bylo ze atakowany bokiem jest przeciwnik)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -25,6 +25,7 @@ folder_colors={
 "res://Animations/": "teal",
 "res://Components/": "gray",
 "res://Enemies/": "red",
+"res://GUI/": "green",
 "res://GameSystems/": "gray",
 "res://Meshes/": "blue",
 "res://Player/": "purple",

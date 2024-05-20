@@ -11,6 +11,7 @@ animation = &"ImportedLibrary/walk_right"
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mvw5h"]
 animation = &"ImportedLibrary/catwalk_walk_forward"
+play_mode = 1
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_at575"]
 animation = &"old_man_idle"

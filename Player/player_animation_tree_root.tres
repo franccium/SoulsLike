@@ -1,4 +1,4 @@
-[gd_resource type="AnimationNodeBlendTree" load_steps=67 format=3 uid="uid://cbv8xrvtubn05"]
+[gd_resource type="AnimationNodeBlendTree" load_steps=69 format=3 uid="uid://cbv8xrvtubn05"]
 
 [ext_resource type="AnimationNodeBlendSpace2D" uid="uid://ddv58naxb0eh2" path="res://Player/player_walking_2d_blend_space.tres" id="1_ob716"]
 
@@ -117,7 +117,7 @@ states/sword_and_shield_walk_and_strafe/position = Vector2(157, -63)
 states/walk/node = ExtResource("1_ob716")
 states/walk/position = Vector2(174, 185)
 transitions = ["jump", "fall", SubResource("AnimationNodeStateMachineTransition_lnnwx"), "sword_and_shield_slash_2", "sword_and_shield_slash_3", SubResource("AnimationNodeStateMachineTransition_xs127"), "sword_and_shield_slash_3", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_lwadx"), "walk", "catwalk_walk_stop", SubResource("AnimationNodeStateMachineTransition_8rrt5"), "fall", "walk", SubResource("AnimationNodeStateMachineTransition_erhom"), "walk", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_tor11"), "walk", "jump", SubResource("AnimationNodeStateMachineTransition_i01e4"), "sword_and_shield_walk_and_strafe", "sword_and_shield_jump_1", SubResource("AnimationNodeStateMachineTransition_e0avc"), "sword_and_shield_jump_1", "fall", SubResource("AnimationNodeStateMachineTransition_rwmcp"), "fall", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_y1we7"), "Start", "walk", SubResource("AnimationNodeStateMachineTransition_fkecc"), "walk", "fall", SubResource("AnimationNodeStateMachineTransition_syl65"), "sword_and_shield_walk_and_strafe", "fall", SubResource("AnimationNodeStateMachineTransition_m01qm"), "sword_and_shield_slash_2", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_4k8yb"), "sword_and_shield_slash_3", "sword_and_shield_walk_and_strafe", SubResource("AnimationNodeStateMachineTransition_gncfl"), "sword_and_shield_walk_and_strafe", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_jahgd"), "sword_and_shield_walk_and_strafe", "sword_and_shield_slash_3", SubResource("AnimationNodeStateMachineTransition_uwp2r")]
-graph_offset = Vector2(-296, 235)
+graph_offset = Vector2(-355, -107)
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jt063"]
 animation = &"ImportedLibrary/catwalk_idle"
@@ -245,22 +245,31 @@ states/sword_sheath_2/position = Vector2(561, 186)
 transitions = ["Start", "catwalk_idle", SubResource("AnimationNodeStateMachineTransition_xlhgv"), "catwalk_idle", "sword_sheath_2", SubResource("AnimationNodeStateMachineTransition_dvrqp"), "sword_sheath_2", "catwalk_idle", SubResource("AnimationNodeStateMachineTransition_w1tfi"), "catwalk_idle", "draw_sword_left_hand", SubResource("AnimationNodeStateMachineTransition_oiq53"), "draw_sword_left_hand", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_klk4p"), "sword_and_shield_idle", "sword_sheath_2", SubResource("AnimationNodeStateMachineTransition_arsfw"), "sword_and_shield_idle", "sword_and_shield_attack_2", SubResource("AnimationNodeStateMachineTransition_febep"), "sword_and_shield_attack_2", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_0il32"), "catwalk_idle", "draw_sword_right_hand", SubResource("AnimationNodeStateMachineTransition_fotxb"), "draw_sword_right_hand", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_8t2pn"), "sword_and_shield_idle", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_btfl2"), "sword_and_shield_slash_2", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_qr4uw"), "sword_and_shield_attack_2", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_dvf1u"), "sword_and_shield_slash_2", "sword_and_shield_attack_2", SubResource("AnimationNodeStateMachineTransition_brjhx"), "sword_and_shield_attack_2", "sword_and_shield_attack_4", SubResource("AnimationNodeStateMachineTransition_5gsly"), "sword_and_shield_attack_4", "sword_and_shield_attack_2", SubResource("AnimationNodeStateMachineTransition_hsjsn"), "sword_and_shield_idle", "sword_and_shield_attack_4", SubResource("AnimationNodeStateMachineTransition_eapnb"), "sword_and_shield_attack_4", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_2frga"), "sword_and_shield_idle", "sword_and_shield_attack_5", SubResource("AnimationNodeStateMachineTransition_uiaau"), "sword_and_shield_attack_5", "sword_and_shield_idle", SubResource("AnimationNodeStateMachineTransition_ubmn3"), "sword_and_shield_attack_5", "sword_and_shield_slash_2", SubResource("AnimationNodeStateMachineTransition_md83i"), "sword_and_shield_slash_2", "sword_and_shield_attack_5", SubResource("AnimationNodeStateMachineTransition_glc1g")]
 graph_offset = Vector2(218, -19)
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_h2brw"]
+animation = &"ImportedMovementLibrary/stand_to_roll"
+
+[sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_5e0db"]
+
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_nfxg0"]
 animation = &"ImportedMovementLibrary/sword_and_shield_impact_2"
 
 [sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_3jvhy"]
 
 [resource]
-graph_offset = Vector2(-554.839, 33.2189)
+graph_offset = Vector2(-0.922974, 165.387)
 nodes/Blend2/node = SubResource("AnimationNodeBlend2_r2gys")
 nodes/Blend2/position = Vector2(80, 180)
 nodes/LocomotionStateMachine/node = SubResource("AnimationNodeStateMachine_puqt4")
 nodes/LocomotionStateMachine/position = Vector2(-200, 40)
 nodes/UpperBodyStateMachine/node = SubResource("AnimationNodeStateMachine_v0jjq")
 nodes/UpperBodyStateMachine/position = Vector2(-200, 320)
-nodes/output/position = Vector2(820, 160)
+nodes/dodge_roll/node = SubResource("AnimationNodeAnimation_h2brw")
+nodes/dodge_roll/position = Vector2(440, 520)
+nodes/dodge_roll_oneshot/node = SubResource("AnimationNodeOneShot_5e0db")
+nodes/dodge_roll_oneshot/position = Vector2(780, 200)
+nodes/output/position = Vector2(1140, 240)
 nodes/stagger/node = SubResource("AnimationNodeAnimation_nfxg0")
 nodes/stagger/position = Vector2(-120, 520)
 nodes/stagger_oneshot/node = SubResource("AnimationNodeOneShot_3jvhy")
 nodes/stagger_oneshot/position = Vector2(460, 200)
-node_connections = [&"Blend2", 0, &"LocomotionStateMachine", &"Blend2", 1, &"UpperBodyStateMachine", &"output", 0, &"stagger_oneshot", &"stagger_oneshot", 0, &"Blend2", &"stagger_oneshot", 1, &"stagger"]
+node_connections = [&"Blend2", 0, &"LocomotionStateMachine", &"Blend2", 1, &"UpperBodyStateMachine", &"dodge_roll_oneshot", 0, &"stagger_oneshot", &"dodge_roll_oneshot", 1, &"dodge_roll", &"output", 0, &"dodge_roll_oneshot", &"stagger_oneshot", 0, &"Blend2", &"stagger_oneshot", 1, &"stagger"]

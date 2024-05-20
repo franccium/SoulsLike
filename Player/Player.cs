@@ -88,7 +88,7 @@ public partial class Player : Human
 
         if(Input.IsActionJustPressed("lmb"))
         {
-            if(isStaggered())
+            if(isInAction())
             {
                 return;
             }
@@ -134,20 +134,25 @@ public partial class Player : Human
 
     private void UpdateInputMovement(ref Vector3 velocity, float delta)
     {
+        if (isInAction())
+        {
+            return;
+        }
+
         _currentInput = Input.GetVector("left", "right", "forward", "backwards");
         // input direction responsive to the direction the player's camera is facing
-        Vector3 direction = -(_cameraPivot.Transform.Basis * new Vector3(_currentInput.X, 0, _currentInput.Y)).Normalized();
-        if (direction != Vector3.Zero)
+        _movementDirection = -(_cameraPivot.Transform.Basis * new Vector3(_currentInput.X, 0, _currentInput.Y)).Normalized();
+        if (_movementDirection != Vector3.Zero)
         {
-            velocity.X = direction.X * HumanSpeed;
-            velocity.Z = direction.Z * HumanSpeed;
+            velocity.X = _movementDirection.X * MovementSpeed;
+            velocity.Z = _movementDirection.Z * MovementSpeed;
             Vector3 currentNormalizedVelocity = ToLocal(GlobalPosition + velocity);
             _currentInput = new Vector2(currentNormalizedVelocity.X, currentNormalizedVelocity.Z).LimitLength(1);
         }
         else
         {
-            velocity.X = Mathf.MoveToward(Velocity.X, 0, HumanSpeed);
-            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, HumanSpeed);
+            velocity.X = Mathf.MoveToward(Velocity.X, 0, MovementSpeed);
+            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, MovementSpeed);
 
             _currentInput = Vector2.Zero;
         }

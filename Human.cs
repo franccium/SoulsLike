@@ -5,25 +5,25 @@ public partial class Human : CharacterBody3D
 {
     protected AnimationTree _animationTree;
     protected const float TransitionSpeed = 0.1f;
-    protected const float HumanSpeed = 5.0f;
     protected const float RotationSpeed = 10;
     protected const float JumpVelocity = 4.5f;
     protected float Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 
-    protected StringName _locomotionStatePlaybackPath = "parameters/LocomotionStateMachine/playback";
-    protected StringName _locomotionBlendPath = "parameters/LocomotionStateMachine/walk/blend_position";
+    protected static readonly StringName _locomotionStatePlaybackPath = "parameters/LocomotionStateMachine/playback";
+    protected static readonly StringName _locomotionBlendPath = "parameters/LocomotionStateMachine/walk/blend_position";
 
-    protected StringName _jumpStateName = "jump";
-    protected StringName _fallingStateName = "fall";
-    protected StringName _walkingStateName = "walk";
+    protected static readonly StringName _jumpStateName = "jump";
+    protected static readonly StringName _fallingStateName = "fall";
+    protected static readonly StringName _walkingStateName = "walk";
 
-    protected StringName _upperBodyStatePlaybackPath = "parameters/UpperBodyStateMachine/playback";
+    protected static readonly StringName _upperBodyStatePlaybackPath = "parameters/UpperBodyStateMachine/playback";
 
     AnimationNodeStateMachinePlayback _upperBodyStateMachinePlayback;
     AnimationNodeStateMachinePlayback _locomotionStateMachinePlayback;
 
     protected Vector2 _current2DVelocity = Vector2.Zero;
     protected Vector2 _current2DDirection = Vector2.Zero;
+    protected Vector3 _movementDirection = Vector3.Zero;
 
     protected bool jumpQueued = false;
 
@@ -35,6 +35,7 @@ public partial class Human : CharacterBody3D
         _locomotionStateMachinePlayback = (AnimationNodeStateMachinePlayback)_animationTree.Get(_locomotionStatePlaybackPath);
 
         GatherCombatRequirements();
+        GatherAttributeRequirements();
     }
 
     public override void _Process(double delta)
@@ -79,11 +80,6 @@ public partial class Human : CharacterBody3D
         Falling,
     }
     public GroundedStates GroundedState = GroundedStates.Grounded;
-
-    protected virtual void DodgeRoll()
-    {
-        GD.Print("Dodge Roll");
-    }
 
     protected virtual void UpdateGroundedStateMovement(ref Vector3 velocity, float delta)
     {
@@ -165,9 +161,9 @@ public partial class Human : CharacterBody3D
         set => _combatComponent.CombatState = value;
     }
 
-    protected StringName _staggerStateName = "stagger";
-    protected StringName _staggerOneShotRequestPath = "parameters/stagger_oneshot/request";
-    protected StringName _staggerOneShotIsActivePath = "parameters/stagger_oneshot/active";
+    protected static readonly StringName _staggerStateName = "stagger";
+    protected static readonly StringName _staggerOneShotRequestPath = "parameters/stagger_oneshot/request";
+    protected static readonly StringName _staggerOneShotIsActivePath = "parameters/stagger_oneshot/active";
 
     protected virtual void GatherCombatRequirements()
     {
@@ -195,7 +191,11 @@ public partial class Human : CharacterBody3D
         _swordCombatComponent.LocomotionStateMachinePlayback = _locomotionStateMachinePlayback;
 
         _swordCombatComponent.EquippedSword = _leftHipItemContainer.GetNode<Sword>("bastard_sword");
+
+        //InitialiseHitbox();
     }
+
+    #region STAGGER
 
     public void Stagger()
     {
@@ -209,10 +209,43 @@ public partial class Human : CharacterBody3D
 
     public bool isStaggered() => _animationTree.Get(_staggerOneShotIsActivePath).AsBool();
 
+    #endregion
+
+    #region DODGE ROLL
+
+    protected static readonly StringName _dodgeRollOneShotRequestPath = "parameters/dodge_roll_oneshot/request";
+    protected static readonly StringName _dodgeRollOneShotIsActivePath = "parameters/dodge_roll_oneshot/active";
+
+    public bool IsInvincible = false;
+
+    protected virtual void DodgeRoll()
+    {
+        _animationTree.Set(_dodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+        GD.Print("dodge roll");
+        //_hitboxArea.Monitoring = false; // wont work cause its the world collision shape that is being checked by swords area
+        IsInvincible = true;
+    }
+
+    // called by the dodge roll animation for now
+    protected virtual void OnDodgeRollFinished()
+    {
+        GD.Print("dodge roll finished");
+        //_hitboxArea.Monitoring = true;
+        IsInvincible = false;
+    }
+
+    public bool isRolling() => _animationTree.Get(_dodgeRollOneShotIsActivePath).AsBool();
+
+    #endregion
+
+    public bool isInAction() => isStaggered() || isRolling();
+
     #region HITBOX
 
+    /*
     private Area3D _hitboxArea;
 
+    
     protected virtual void InitialiseHitbox()
     {
         _hitboxArea = GetNode<Area3D>("HitboxArea");
@@ -222,8 +255,67 @@ public partial class Human : CharacterBody3D
     public void OnHitboxAreaBodyEntered(Node3D body)
     {
     }
+    */
 
     #endregion
+
+    #endregion
+
+    #region ATTRIBUTES
+
+    protected AttributeComponent _attributeComponent;
+
+    protected float MovementSpeed => _attributeComponent.MovementSpeed;
+    protected float MaxHealth => _attributeComponent.MaxHealth;
+    protected float Health => _attributeComponent.Health;
+    protected float MaxStamina => _attributeComponent.MaxStamina;
+    protected float Stamina => _attributeComponent.Stamina;
+
+    protected virtual void GatherAttributeRequirements()
+    {
+        _attributeComponent = GetNode<AttributeComponent>("AttributeComponent");
+    }
+
+    /*
+    protected HealthBar _healthBar;
+
+    protected virtual void InitialiseHealthBar()
+    {
+        _healthBar = GetNode<SubViewport>("HealthBar").GetNode<HealthBar>("HealthBarProgressBar");
+        _healthBar.SetMaxHealth(_attributeComponent.MaxHealth);
+    }
+
+    protected StaminaBar _staminaBar;
+    
+    */
+
+    public virtual void TakeHealthDamage(int damage)
+    {
+        if (IsInvincible)
+            return;
+
+        _attributeComponent.Health -= damage;
+        //_healthBar.SetHealth(_attributeComponent.Health);
+
+        if (Health <= 0)
+        {
+            //todo die
+        }
+    }
+
+    public virtual void TakeStaminaDamage(int damage)
+    {
+        if(IsInvincible)
+            return;
+
+        _attributeComponent.Stamina -= damage;
+        //_staminaBar
+
+        if(Stamina <= 0)
+        {
+            Stagger();
+        }
+    }
 
     #endregion
 }
