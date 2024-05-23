@@ -6,8 +6,6 @@ public partial class Player : Human
     private Node3D _cameraContainer;
     private Node3D _cameraPivot;
     
-    public bool allowVelocityRotation = true;
-
     private bool _shiftModifier = false;
     private bool _altModifier = false;
 
@@ -41,13 +39,14 @@ public partial class Player : Human
 
     public override void _PhysicsProcess(double delta)
     {
+        GD.Print("current animation state: " + CurrentAnimationState);
         Vector3 velocity = Velocity;
 
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
         UpdateRotation((float)delta);
 
-        if(CurrentAnimationState != AnimationStates.Idle)
+        if(CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
         {
             UpdateAnimationRootMotion(ref velocity, (float)delta);
         }
@@ -84,6 +83,8 @@ public partial class Player : Human
         GD.Print("Velocity: " + Velocity);
     }
 
+    #region INPUT
+
     public override void _Input(InputEvent @event)
     {
         _shiftModifier = Input.IsActionPressed("shift_modifier");
@@ -106,17 +107,36 @@ public partial class Player : Human
                     DodgeRoll();
                 }
             }
+            else if(Input.IsActionPressed("space"))
+            {
+                BeginSprint();
+            }
+            else if(Input.IsActionJustReleased("space"))
+            {
+                EndSprint();
+            }
         }
 
         if (Input.IsActionJustPressed("sheath_weapon"))
         {
-            if(_combatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
+            if(_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
             {
                 _swordCombatComponent.UnequipWeaponRightHand();
             }
-            else if(_combatState == CombatComponent.CombatStates.SwordSheathed)
+            else if(_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordSheathed)
             {
                 _swordCombatComponent.EquipWeaponRightHand();
+            }
+        }
+        if (Input.IsActionJustPressed("sheath_weapon_2"))
+        {
+            if (_shieldCombatComponent.CombatState == CombatComponent.CombatStates.ShieldDrawnOneHanded)
+            {
+                _shieldCombatComponent.UnequipShieldLeftHand();
+            }
+            else if (_shieldCombatComponent.CombatState == CombatComponent.CombatStates.ShieldSheathed)
+            {
+                _shieldCombatComponent.EquipShieldLeftHand();
             }
         }
 
@@ -126,21 +146,23 @@ public partial class Player : Human
 
         if(Input.IsActionJustPressed("lmb"))
         {
-            if(isInAction())
+            if(IsInAction())
             {
                 return;
             }
 
-            if(_combatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
+            if(_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
             {
                 StringName currentAnimation = _upperBodyStateMachinePlayback.GetCurrentNode().ToString();
                 if(currentAnimation == _swordCombatComponent.OneHandAttackName)
                 {
+                    Attack();
                     _swordCombatComponent.OneHandAltAttackSword();
                     return;
                 }
                 else if(currentAnimation == _swordCombatComponent.AltOneHandAttackName)
                 {
+                    Attack();
                     _swordCombatComponent.StrongOneHandAttackSword();
                     return;
                 }
@@ -149,32 +171,61 @@ public partial class Player : Human
                 {
                     if (_altModifier)
                     {
+                        Attack();
                         _swordCombatComponent.StrongAltOneHandAttackSword();
                     }
                     else
                     {
+                        Attack();
                         _swordCombatComponent.StrongOneHandAttackSword();
                     }
                 }
                 else if (_altModifier)
                 {
+                    Attack();
                     _swordCombatComponent.OneHandAltAttackSword();
                 }
                 else
                 {
+                    Attack();
                     _swordCombatComponent.OneHandAttackSword();
-                    _isAttacking = true;
-                    _rollDirection = _movementDirection;
                 }
             }
         }
+
+        if(CurrentAnimationState == AnimationStates.BlockingConst && Input.IsActionJustReleased("rmb"))
+        {
+            StopBlockConst();
+            _shieldCombatComponent.FinishShieldAction();
+        }
+        else if(Input.IsActionPressed("rmb") && CurrentAnimationState != AnimationStates.BlockingConst)
+        {
+            BlockConst();
+            _shieldCombatComponent.OneHandConstBlockShield();
+        }
+
+        if(Input.IsActionJustPressed("rmb") && _shiftModifier)
+        {
+            if (IsInAction())
+            {
+                return;
+            }
+
+            if (_shieldCombatComponent.CombatState == CombatComponent.CombatStates.ShieldDrawnOneHanded)
+            {
+                Parry();
+                _shieldCombatComponent.OneHandParryShield();
+            }
+        }
     }
+
+    #endregion
 
     #region MOVEMENT
 
     private void UpdateInputMovement(ref Vector3 velocity, float delta)
     {
-        if (isInAction())
+        if (IsInAction())
         {
             return;
         }
@@ -184,15 +235,15 @@ public partial class Player : Human
         _movementDirection = -(_cameraPivot.Transform.Basis * new Vector3(_currentInput.X, 0, _currentInput.Y)).Normalized();
         if (_movementDirection != Vector3.Zero)
         {
-            velocity.X = _movementDirection.X * MovementSpeed;
-            velocity.Z = _movementDirection.Z * MovementSpeed;
+            velocity.X = _movementDirection.X * _currentSpeed;
+            velocity.Z = _movementDirection.Z * _currentSpeed;
             Vector3 currentNormalizedVelocity = ToLocal(GlobalPosition + velocity);
             _currentInput = new Vector2(currentNormalizedVelocity.X, currentNormalizedVelocity.Z).LimitLength(1);
         }
         else
         {
-            velocity.X = Mathf.MoveToward(Velocity.X, 0, MovementSpeed);
-            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, MovementSpeed);
+            velocity.X = Mathf.MoveToward(Velocity.X, 0, _currentSpeed);
+            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, _currentSpeed);
 
             _currentInput = Vector2.Zero;
         }
@@ -200,35 +251,14 @@ public partial class Player : Human
 
     private void UpdateRotation(float delta)
     {
-        if (allowVelocityRotation)
-        {
-            if (Velocity.Length() > 0.1f)
-            {
-                RotationDegrees = new Vector3(
-                    RotationDegrees.X,
-                    Mathf.Floor(Mathf.RadToDeg(Mathf.LerpAngle(Mathf.DegToRad(RotationDegrees.Y), Mathf.Atan2(-Velocity.X, -Velocity.Z), delta * RotationSpeed))),
-                    RotationDegrees.Z
-                );
-            }
-        }
-        else
+        if (Velocity.Length() > 0.1f)
         {
             RotationDegrees = new Vector3(
                 RotationDegrees.X,
-                _cameraContainer.RotationDegrees.Y,
+                Mathf.Floor(Mathf.RadToDeg(Mathf.LerpAngle(Mathf.DegToRad(RotationDegrees.Y), Mathf.Atan2(-Velocity.X, -Velocity.Z), delta * RotationSpeed))),
                 RotationDegrees.Z
             );
         }
-    }
-
-    public void DisableVelocityRotation()
-    {
-        allowVelocityRotation = false;
-    }
-
-    public void EnableVelocityRotation()
-    {
-        allowVelocityRotation = true;
     }
 
     #endregion
@@ -239,7 +269,8 @@ public partial class Player : Human
     {
         base.GatherCombatRequirements();
 
-        _swordCombatComponent.EquippedSword.IsOwnedByPlayer = true;
+        _swordCombatComponent.EquippedSword.SetOwner(this);
+        _shieldCombatComponent.EquippedShield.SetOwner(this);
     }
 
     #endregion

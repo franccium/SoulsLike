@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cd8dph3am4px2"]
+
+[ext_resource type="Script" path="res://Weapons/WeaponHitboxArea.cs" id="1_07c3d"]
+
+[node name="WeaponHitboxArea" type="Area3D"]
+script = ExtResource("1_07c3d")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]

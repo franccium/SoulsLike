@@ -18,11 +18,14 @@ public partial class HumanEnemy : Human
         
         if(_queuedAttack)
         {
-            InitialiseAttack();
+            InitialiseBlock();
+            //InitialiseAttack();
             return;
         }
-
-        ScanForAttackInRange();
+        if(_playerSeen)
+            ScanForAttackInRange();
+        else 
+            ScanForPlayerSeen();
 
         base._Process(delta);
     }
@@ -33,26 +36,11 @@ public partial class HumanEnemy : Human
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
         // follow player
-        _movementDirection = GlobalPosition.DirectionTo(_player.GlobalPosition);
-        if (_movementDirection != Vector3.Zero)
-        {
-            velocity.X = _movementDirection.X * MovementSpeed;
-            velocity.Z = _movementDirection.Z * MovementSpeed;
-        }
-        else
-        {
-            velocity.X = Mathf.MoveToward(Velocity.X, 0, MovementSpeed);
-            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, MovementSpeed);
-        }
-
-        if (Velocity.Length() > 0.1f)
-        {
-            RotationDegrees = new Vector3(
-                RotationDegrees.X,
-                Mathf.Floor(Mathf.RadToDeg(Mathf.LerpAngle(Mathf.DegToRad(RotationDegrees.Y), Mathf.Atan2(-Velocity.X, -Velocity.Z), (float)delta * RotationSpeed))),
-                RotationDegrees.Z
-            );
-        }
+        if(_playerSeen)
+            _movementDirection = GlobalPosition.DirectionTo(_player.GlobalPosition);
+        else 
+            _movementDirection = Vector3.Zero;
+        base.UpdateMovementInDirection(ref velocity, (float)delta);
 
         Velocity = velocity;
         MoveAndSlide();
@@ -72,6 +60,9 @@ public partial class HumanEnemy : Human
     {
         base.GatherCombatRequirements();
 
+        _swordCombatComponent.EquippedSword.SetOwner(this);
+        _shieldCombatComponent.EquippedShield.SetOwner(this);
+
         _attackRange = _swordCombatComponent.EquippedSword.GetStats().AttackRange;
     }
 
@@ -79,17 +70,19 @@ public partial class HumanEnemy : Human
     {
         if (GlobalPosition.DistanceTo(_player.GlobalPosition) < _detectionRange)
         {
+            _swordCombatComponent.EquipWeaponRightHand();
+            _shieldCombatComponent.EquipShieldLeftHand();
+
             _playerSeen = true;
             _inCombat = true;
-
-            _swordCombatComponent.EquipWeaponRightHand();
         }
         else
         {
+            _swordCombatComponent.UnequipWeaponRightHand();
+            _shieldCombatComponent.UnequipShieldLeftHand();
+
             _playerSeen = false;
             _inCombat = false;
-
-            _swordCombatComponent.UnequipWeaponRightHand();
         }
     }
 
@@ -111,6 +104,17 @@ public partial class HumanEnemy : Human
         _queuedAttack = false;
 
         _swordCombatComponent.OneHandAttackSword();
+    }
+
+    protected virtual void InitialiseBlock()
+    {
+        _queuedAttack = false;
+
+        if (CurrentAnimationState == AnimationStates.Idle)
+        {
+            BlockConst();
+            _shieldCombatComponent.OneHandConstBlockShield();
+        }
     }
 
     #endregion

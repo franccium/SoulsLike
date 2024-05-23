@@ -1,35 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://d3auy82nfl26d"]
+[gd_scene load_steps=4 format=3 uid="uid://dys810yll6agh"]
 
+[ext_resource type="Script" path="res://GUI/HealthBar.cs" id="1_c42u7"]
 [ext_resource type="PackedScene" uid="uid://bco7ta3cn5pyi" path="res://GUI/health_bar_progress_bar.tscn" id="1_dyyro"]
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_yvh65"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_snfb4"]
 viewport_path = NodePath("SubViewport")
 
 [node name="HealthBar" type="Sprite3D"]
-texture = SubResource("ViewportTexture_yvh65")
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
+texture = SubResource("ViewportTexture_snfb4")
+script = ExtResource("1_c42u7")
 
 [node name="SubViewport" type="SubViewport" parent="."]
 disable_3d = true
 transparent_bg = true
 
-[node name="Control" type="Control" parent="SubViewport"]
-custom_minimum_size = Vector2(197, 43)
-layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -98.5
-offset_top = -21.5
-offset_right = 98.5
-offset_bottom = 21.5
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HealthBarProgressBar" parent="SubViewport/Control" instance=ExtResource("1_dyyro")]
-layout_mode = 0
-offset_left = 206.0
-offset_top = 51.0
-offset_right = 434.0
-offset_bottom = 94.0
+[node name="HealthBarProgressBar" parent="SubViewport" instance=ExtResource("1_dyyro")]

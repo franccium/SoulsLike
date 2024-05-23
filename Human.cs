@@ -34,13 +34,13 @@ public partial class Human : CharacterBody3D
         Jumping,
         Falling,
         Attacking,
+        Parrying,
+        BlockingConst,
         DodgeRoll,
         Stagger,
     }
 
     public AnimationStates CurrentAnimationState = AnimationStates.Idle;
-
-    protected float _currentSpeed = 0f;
 
     public override void _Ready()
     {
@@ -53,6 +53,9 @@ public partial class Human : CharacterBody3D
 
         GatherCombatRequirements();
         GatherAttributeRequirements();
+        InitialiseGUIElements();
+
+        _currentSpeed = _attributeComponent.MovementSpeed;
     }
 
     public override void _Process(double delta)
@@ -64,7 +67,7 @@ public partial class Human : CharacterBody3D
         }
         _current2DVelocity += newDelta;
 
-        if (_combatState == CombatComponent.CombatStates.SwordSheathed)
+        if (_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordSheathed)
         {
             _animationTree.Set(_locomotionBlendPath, _current2DVelocity);
         }
@@ -80,10 +83,15 @@ public partial class Human : CharacterBody3D
 
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
-        //direction and 2D direction
-        if(CurrentAnimationState != AnimationStates.Idle)
+        //tododirection and 2D direction
+
+        if (CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
         {
             UpdateAnimationRootMotion(ref velocity, (float)delta);
+        }
+        else
+        {
+            UpdateMovementInDirection(ref velocity, (float)delta);
         }
 
         Velocity = velocity;
@@ -103,18 +111,48 @@ public partial class Human : CharacterBody3D
         velocity = -(currentRotation.Normalized() * rootMotionPosition * _attributeComponent.RollSpeed) / delta;
     }
 
+    protected virtual void UpdateMovementInDirection(ref Vector3 velocity, float delta)
+    {
+        if (_movementDirection != Vector3.Zero)
+        {
+            velocity.X = _movementDirection.X * _currentSpeed;
+            velocity.Z = _movementDirection.Z * _currentSpeed;
+            //?Vector3 currentNormalizedVelocity = ToLocal(GlobalPosition + velocity);
+            //?_currentInput = new Vector2(currentNormalizedVelocity.X, currentNormalizedVelocity.Z).LimitLength(1);
+        }
+        else
+        {
+            velocity.X = Mathf.MoveToward(Velocity.X, 0, _currentSpeed);
+            velocity.Z = Mathf.MoveToward(Velocity.Z, 0, _currentSpeed);
+            //?_currentInput = Vector2.Zero;
+        }
+
+        if (Velocity.Length() > 0.1f)
+        {
+            RotationDegrees = new Vector3(
+                RotationDegrees.X,
+                Mathf.Floor(Mathf.RadToDeg(Mathf.LerpAngle(Mathf.DegToRad(RotationDegrees.Y), Mathf.Atan2(-Velocity.X, -Velocity.Z), (float)delta * RotationSpeed))),
+                RotationDegrees.Z
+            );
+        }
+    }
+
     protected virtual void OnAnimationFinished(StringName animName)
     {
         GD.Print("animation finished: " + animName);
-        
+
         switch (CurrentAnimationState)
         {
             case AnimationStates.Attacking:
                 _isAttacking = false;
+                _swordCombatComponent.FinishAttack();
                 break;
             case AnimationStates.DodgeRoll:
                 OnDodgeRollFinished();
-                break; 
+                break;
+            case AnimationStates.Parrying:
+                _shieldCombatComponent.FinishShieldAction();
+                break;
         }
 
         CurrentAnimationState = AnimationStates.Idle;
@@ -130,6 +168,8 @@ public partial class Human : CharacterBody3D
         Falling,
     }
     public GroundedStates GroundedState = GroundedStates.Grounded;
+
+    protected float _currentSpeed = 0f;
 
     protected virtual void UpdateGroundedStateMovement(ref Vector3 velocity, float delta)
     {
@@ -150,7 +190,7 @@ public partial class Human : CharacterBody3D
                 GroundedState = GroundedStates.Grounded;
                 GD.Print("falling stopped");
 
-                if (_combatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
+                if (_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
                 {
                     _locomotionStateMachinePlayback.Travel(_swordCombatComponent.CombatWalkStateName);
                     GD.Print("combat walk");
@@ -173,7 +213,7 @@ public partial class Human : CharacterBody3D
 
     protected virtual void BeginJump()
     {
-        if (_combatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
+        if (_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
         {
             _locomotionStateMachinePlayback.Travel(_swordCombatComponent.CombatJumpStateName);
         }
@@ -190,6 +230,16 @@ public partial class Human : CharacterBody3D
         jumpQueued = true;
     }
 
+    protected void BeginSprint()
+    {
+        _currentSpeed = _attributeComponent.SprintSpeed;
+    }
+
+    protected void EndSprint()
+    {
+        _currentSpeed = MovementSpeed;
+    }
+
     #endregion
 
     #region COMBAT
@@ -198,18 +248,15 @@ public partial class Human : CharacterBody3D
     protected Node3D _leftHandContainer;
     protected Node3D _rightHipContainer;
     protected Node3D _leftHipContainer;
+    protected Node3D _backContainer;
 
     protected Node3D _rightHipItemContainer;
     protected Node3D _leftHipItemContainer;
 
-    protected CombatComponent _combatComponent;
-    protected SwordCombatComponent _swordCombatComponent;
+    protected Node3D _backItemContainer;
 
-    protected CombatComponent.CombatStates _combatState
-    {
-        get => _combatComponent.CombatState;
-        set => _combatComponent.CombatState = value;
-    }
+    protected SwordCombatComponent _swordCombatComponent;
+    protected ShieldCombatComponent _shieldCombatComponent;
 
     protected bool _isAttacking = false;
 
@@ -223,13 +270,14 @@ public partial class Human : CharacterBody3D
         _leftHandContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/LeftHandAttachment/LeftHandContainer");
         _rightHipContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/RightHipAttachment/RightHipContainer");
         _leftHipContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/LeftHipAttachment/LeftHipContainer");
+        _backContainer = GetNode<Node3D>("CharacterRig/Armature_001/Skeleton3D/Spine2Attachment/BackContainer");
 
         _rightHipItemContainer = _rightHipContainer.GetNode<Node3D>("ItemContainer");
         _leftHipItemContainer = _leftHipContainer.GetNode<Node3D>("ItemContainer");
+        _backItemContainer = _backContainer.GetNode<Node3D>("BackItemContainer");
 
 
-        _combatComponent = GetNode<CombatComponent>("CombatComponent");
-        _swordCombatComponent = _combatComponent as SwordCombatComponent;
+        _swordCombatComponent = GetNode<SwordCombatComponent>("SwordCombatComponent");
 
         _swordCombatComponent.RightHandContainer = _rightHandContainer;
         _swordCombatComponent.LeftHandContainer = _leftHandContainer;
@@ -244,7 +292,43 @@ public partial class Human : CharacterBody3D
 
         _swordCombatComponent.EquippedSword = _leftHipItemContainer.GetNode<Sword>("bastard_sword");
 
+
+        _shieldCombatComponent = GetNode<ShieldCombatComponent>("ShieldCombatComponent");
+        _shieldCombatComponent.RightHandContainer = _rightHandContainer;
+        _shieldCombatComponent.LeftHandContainer = _leftHandContainer;
+        _shieldCombatComponent.BackItemContainer = _backItemContainer;
+
+        _shieldCombatComponent.AnimationTree = _animationTree;
+        _shieldCombatComponent.UpperBodyStateMachinePlayback = _upperBodyStateMachinePlayback;
+        _shieldCombatComponent.LocomotionStateMachinePlayback = _locomotionStateMachinePlayback;
+        _shieldCombatComponent.EquippedShield = _backItemContainer.GetNode<Shield>("VikingShield");
+
         //InitialiseHitbox();
+    }
+
+    protected virtual void Attack()
+    {
+        _isAttacking = true;
+        _rollDirection = _movementDirection;
+        CurrentAnimationState = AnimationStates.Attacking;
+    }
+
+    protected virtual void Parry()
+    {
+        _rollDirection = _movementDirection;
+        CurrentAnimationState = AnimationStates.Parrying;
+    }
+
+    protected virtual void BlockConst()
+    {
+        CurrentAnimationState = AnimationStates.BlockingConst;
+        _currentSpeed = _attributeComponent.BlockingMovementSpeed;
+    }
+
+    protected virtual void StopBlockConst()
+    {
+        CurrentAnimationState = AnimationStates.Idle;
+        _currentSpeed = _attributeComponent.MovementSpeed;
     }
 
     #region STAGGER
@@ -254,12 +338,13 @@ public partial class Human : CharacterBody3D
         //_upperBodyStateMachinePlayback.Travel("stagger");
         //_locomotionStateMachinePlayback.Travel("stagger");
         //_animationTree.
+        _movementDirection = Vector3.Zero;
         _animationTree.Set(_staggerOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
 
         //todo disable actions
     }
 
-    public bool isStaggered() => _animationTree.Get(_staggerOneShotIsActivePath).AsBool();
+    public bool IsStaggered() => _animationTree.Get(_staggerOneShotIsActivePath).AsBool();
 
     #endregion
 
@@ -309,11 +394,11 @@ public partial class Human : CharacterBody3D
         _rollDirection = Vector3.Zero;
     }
 
-    public bool isRolling() => _animationTree.Get(_dodgeRollOneShotIsActivePath).AsBool() || _animationTree.Get(_sideDodgeRollOneShotIsActivePath).AsBool();
+    public bool IsRolling() => _animationTree.Get(_dodgeRollOneShotIsActivePath).AsBool() || _animationTree.Get(_sideDodgeRollOneShotIsActivePath).AsBool();
 
     #endregion
 
-    public bool isInAction() => isStaggered() || isRolling();
+    public bool IsInAction() => IsStaggered() || IsRolling();
 
     #region HITBOX
 
@@ -353,18 +438,28 @@ public partial class Human : CharacterBody3D
         GatherDodgerollRequirements();
     }
 
-    /*
+
     protected HealthBar _healthBar;
+
+    protected virtual void InitialiseGUIElements()
+    {
+        InitialiseHealthBar();
+        InitialiseStaminaBar();
+    }
 
     protected virtual void InitialiseHealthBar()
     {
-        _healthBar = GetNode<SubViewport>("HealthBar").GetNode<HealthBar>("HealthBarProgressBar");
+        _healthBar = GetNode<Sprite3D>("HealthBar") as HealthBar;
         _healthBar.SetMaxHealth(_attributeComponent.MaxHealth);
     }
 
     protected StaminaBar _staminaBar;
-    
-    */
+
+    protected virtual void InitialiseStaminaBar()
+    {
+        _staminaBar = GetNode<Sprite3D>("StaminaBar") as StaminaBar;
+        _staminaBar.SetMaxStamina(_attributeComponent.MaxStamina);
+    }
 
     public virtual void TakeHealthDamage(int damage)
     {
@@ -372,7 +467,7 @@ public partial class Human : CharacterBody3D
             return;
 
         _attributeComponent.Health -= damage;
-        //_healthBar.SetHealth(_attributeComponent.Health);
+        _healthBar.SetHealth(_attributeComponent.Health);
 
         if (Health <= 0)
         {
@@ -382,15 +477,15 @@ public partial class Human : CharacterBody3D
 
     public virtual void TakeStaminaDamage(int damage)
     {
-        if(IsInvincible)
+        if (IsInvincible)
             return;
 
         _attributeComponent.Stamina -= damage;
 
         GD.Print(_attributeComponent.Stamina);
-        //_staminaBar
+        _staminaBar.SetStamina(_attributeComponent.Stamina);
 
-        if(Stamina <= 0)
+        if (Stamina <= 0)
         {
             Stagger();
             _attributeComponent.Stamina = _attributeComponent.MaxStamina;

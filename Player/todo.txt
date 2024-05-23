@@ -16,15 +16,22 @@ jak bedzie root motion to jakos to velocity floorowac zeby sie nie ruszal ciagle
 
 enemy ai
 
-wylaczanie hitboxa miecza po ataku
-
 dodge roll
 
-health / stamina bar
+stamina bar dowalic fajny z jakimis przegrodkami
 
 odskakiwanie miecza
 
 tarcza
+
+blokowanie atakow consumuje stamine
+ataki i akcje consumuja stamine
+trzymanie tarczy consumuje stamine
+idealne parry
+
+ui itemow
+
+kryt w zestaggerowanego przeciwnika
 
 druga bron
 

@@ -1,84 +1,102 @@
 using Godot;
 using System;
 
-public partial class Sword : Node3D
+public partial class Sword : Weapon
 {
-    private WeaponAttributesComponent _weaponAttributesComponent;
+    protected AudioStream _blockSound;
+    protected AudioStream _hitSound;
 
     private MeshInstance3D _sheathMesh;
     private MeshInstance3D _sheathMesh2;
 
-    private Area3D _hitboxArea;
-
-    public bool IsOwnedByPlayer = false;
-
 	public override void _Ready()
 	{
+        base._Ready();
+
+        _blockSound = ResourceLoader.Load<AudioStream>("res://Weapons/SoundEffects/warfare_swords_x_2_hit_scrape_001.mp3");
+        _hitSound = ResourceLoader.Load<AudioStream>("res://Weapons/SoundEffects/sword_strike_metal_shield_armour_clang_001_95364.mp3");
+
         _sheathMesh = GetNode<MeshInstance3D>("Sheath1");
         _sheathMesh2 = GetNode<MeshInstance3D>("Sheath2");
 
-        _hitboxArea = GetNode<Area3D>("HitboxArea");
-
-        _hitboxArea.BodyEntered += OnHitboxAreaBodyEntered;
-        _hitboxArea.Monitoring = false;
+        _weaponAttributesComponent = new WeaponAttributesComponent();
     }
 
 	public override void _Process(double delta)
 	{
 	}
 
-    public WeaponAttributesComponent GetStats()
-    {
-        return _weaponAttributesComponent;
-    }
-
-    public void DrawWeapon()
+    public override void DrawWeapon()
     {
         _sheathMesh.Visible = false;
         _sheathMesh2.Visible = false;
     }
 
-    public void SheathWeapon()
+    public override void SheathWeapon()
     {
         _sheathMesh.Visible = true;
         _sheathMesh2.Visible = true;
     }
 
-    public void Attack()
+    public override void Attack()
     {
         _hitboxArea.Monitoring = true;
-        //todo signal to end monitoring or a function or something
     }
 
-    private void HitHuman(Human human)
+    public override void FinishAttack()
+    {
+        _hitboxArea.Monitoring = false;
+    }
+
+    protected override void HitHuman(Human human)
     {
         human.TakeHealthDamage(_weaponAttributesComponent.Damage);
         human.TakeStaminaDamage(_weaponAttributesComponent.StaminaDamage);
     }
 
-    public void OnHitboxAreaBodyEntered(Node3D body)
+    public override void OnHitboxAreaBodyEntered(Node3D body)
     {
-        if(body is Sword sword)
+        if(_isOwnedByPlayer)
         {
-            GD.Print("Sword hit sword");
+            if(body is HumanEnemy enemy)
+            {
+                GD.Print("Sword hit enemy");
+                HitHuman(enemy);
+            }
         }
         else
         {
-            if(IsOwnedByPlayer)
+            if(body is Player player)
             {
-                if(body is HumanEnemy enemy)
-                {
-                    GD.Print("Sword hit enemy");
-                    HitHuman(enemy);
-                }
+                GD.Print("Sword hit player");
+                HitHuman(player);
             }
-            else
+        }
+    }
+
+    public override void OnHitboxAreaOtherAreaEntered(Area3D area)
+    {
+        if(area is WeaponHitboxArea weaponHitboxArea)
+        {
+            if (weaponHitboxArea.Weapon.WeaponOwner == this.WeaponOwner)
+                return;
+
+            if (weaponHitboxArea.Weapon is Sword sword)
             {
-                if(body is Player player)
-                {
-                    GD.Print("Sword hit player");
-                    HitHuman(player);
-                }
+                GD.Print("Sword hit sword");
+                _audioStreamPlayer.Stream = _blockSound;
+                _audioStreamPlayer.Play();
+                WeaponOwner.TakeStaminaDamage(_weaponAttributesComponent.BlockedByOtherStaminaCost);
+                sword.WeaponOwner.TakeStaminaDamage(_weaponAttributesComponent.BlockingAttackStaminaCost);
+            }
+            else if(weaponHitboxArea.Weapon is Shield shield)
+            {
+                GD.Print("Sword hit shield");
+                _audioStreamPlayer.Stream = _hitSound;
+                _audioStreamPlayer.Play();
+                WeaponOwner.TakeStaminaDamage(_weaponAttributesComponent.BlockedByOtherStaminaCost);
+                shield.WeaponOwner.TakeStaminaDamage(_weaponAttributesComponent.BlockingAttackStaminaCost);
+                shield.WeaponOwner.Stagger();
             }
         }
     }

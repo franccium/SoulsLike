@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://dtnwvwptogmib"]
+
+[ext_resource type="PackedScene" uid="uid://d2g4onqmww2dy" path="res://Weapons/Shields/VikingShield/Viking+Shield.glb" id="1_ffw5g"]
+[ext_resource type="Script" path="res://Weapons/Shields/VikingShield/VikingShield.cs" id="2_wpj0i"]
+[ext_resource type="PackedScene" uid="uid://cd8dph3am4px2" path="res://Weapons/weapon_hitbox_area.tscn" id="3_2yod5"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_nvofp"]
+height = 0.0823168
+radius = 0.409693
+
+[node name="VikingShield" instance=ExtResource("1_ffw5g")]
+script = ExtResource("2_wpj0i")
+
+[node name="WeaponHitboxArea" parent="." index="5" instance=ExtResource("3_2yod5")]
+
+[node name="CollisionShape3D" parent="WeaponHitboxArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0.0221718)
+shape = SubResource("CylinderShape3D_nvofp")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." index="6"]
+
+[editable path="WeaponHitboxArea"]

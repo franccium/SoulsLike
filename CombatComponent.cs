@@ -7,6 +7,9 @@ public partial class CombatComponent : Node
         SwordSheathed,
         SwordDrawnOneHanded,
         SwordDrawnTwoHanded,
+        ShieldDrawnOneHanded,
+        ShieldDrawnTwoHanded,
+        ShieldSheathed,
     }
 
     public CombatStates CombatState { get; set; } = CombatStates.SwordSheathed;

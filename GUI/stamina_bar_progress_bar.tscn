@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://nq4rxn7suqp"]
+
+[ext_resource type="Texture2D" uid="uid://dnt2ykdx5syjb" path="res://GUI/stamina_bar_under.png" id="1_j0u3c"]
+[ext_resource type="Texture2D" uid="uid://bnrj4ds4gqr0s" path="res://GUI/stamina_bar_spirte.png" id="2_0frk8"]
+
+[node name="StaminaBarProgressBar" type="TextureProgressBar"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -6.0
+offset_right = 50.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+value = 50.0
+texture_under = ExtResource("1_j0u3c")
+texture_progress = ExtResource("2_0frk8")

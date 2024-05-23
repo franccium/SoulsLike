@@ -1,8 +1,9 @@
-[gd_scene load_steps=17 format=3 uid="uid://b1vdtba60etm"]
+[gd_scene load_steps=18 format=3 uid="uid://b1vdtba60etm"]
 
 [ext_resource type="Script" path="res://Sword.cs" id="1_6aq8q"]
 [ext_resource type="Texture2D" uid="uid://c1lche44nihay" path="res://Meshes/Weapons/bastard_sword_sheathed_WP_A_0206.png" id="2_nhfyo"]
 [ext_resource type="Texture2D" uid="uid://cj6px0uutkou3" path="res://Meshes/Weapons/bastard_sword_sheathed_WP_A_0206_n.png" id="3_fnsx3"]
+[ext_resource type="PackedScene" uid="uid://cd8dph3am4px2" path="res://Weapons/weapon_hitbox_area.tscn" id="4_6656f"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hau8p"]
 resource_name = "AM_A_1000_0"
@@ -173,7 +174,7 @@ blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_eqrxn")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_s31wn"]
-size = Vector3(0.0888062, 1.43146, 0.0352783)
+size = Vector3(0.0888062, 1.4665, 0.0352783)
 
 [node name="bastard_sword_sheathed" type="Node3D"]
 script = ExtResource("1_6aq8q")
@@ -198,8 +199,14 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
 mesh = SubResource("ArrayMesh_k42p8")
 skeleton = NodePath("")
 
-[node name="HitboxArea" type="Area3D" parent="."]
+[node name="WeaponHitboxArea" parent="." instance=ExtResource("4_6656f")]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxArea"]
+[node name="CollisionShape3D" parent="WeaponHitboxArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00304368, -0.412143, 0)
+shape = SubResource("BoxShape3D_s31wn")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00424194, -0.470123, 0.00384521)
 shape = SubResource("BoxShape3D_s31wn")
+
+[editable path="WeaponHitboxArea"]

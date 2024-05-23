@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://beiqdwdvuv3nv"
+path.s3tc="res://.godot/imported/uploads_files_3795812_Viking+Shield_Viking Shield_dupl_low_Shield UV_Metallic-Viking Shield_dupl_low_Shield UV_Roughness.png-97b3c0877bea1b53cfecb58c03acb5ea.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "7d51f73299012d297c4fa50b0c821440"
+}
+
+[deps]
+
+source_file="res://Weapons/Shields/VikingShield/uploads_files_3795812_Viking+Shield_Viking Shield_dupl_low_Shield UV_Metallic-Viking Shield_dupl_low_Shield UV_Roughness.png"
+dest_files=["res://.godot/imported/uploads_files_3795812_Viking+Shield_Viking Shield_dupl_low_Shield UV_Metallic-Viking Shield_dupl_low_Shield UV_Roughness.png-97b3c0877bea1b53cfecb58c03acb5ea.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

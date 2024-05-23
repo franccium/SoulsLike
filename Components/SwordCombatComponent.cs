@@ -39,6 +39,7 @@ public partial class SwordCombatComponent : CombatComponent
 
     public override void _Ready()
     {
+        CombatState = CombatStates.SwordSheathed;
     }
 
     public override void _Process(double delta)
@@ -53,6 +54,11 @@ public partial class SwordCombatComponent : CombatComponent
         //? lowerBodyPlayback.Travel(_oneHandAttackName);
 
         EquippedSword.Attack();
+    }
+
+    public void FinishAttack()
+    {
+        EquippedSword.FinishAttack();
     }
 
     public void OneHandAttackSword()
@@ -84,6 +90,7 @@ public partial class SwordCombatComponent : CombatComponent
     /// </summary>
     public void EquipWeaponRightHand()
     {
+        GD.Print("Equip Weapon Right Hand");
         LeftHipItemContainer.SwitchNodeOwnership(RightHandContainer);
 
         CombatState = CombatStates.SwordDrawnOneHanded;
@@ -96,6 +103,7 @@ public partial class SwordCombatComponent : CombatComponent
 
     public void UnequipWeaponRightHand()
     {
+        GD.Print("Unequip Weapon Right Hand");
         LeftHipItemContainer.SwitchNodeOwnership(LeftHipContainer);
 
         CombatState = CombatStates.SwordSheathed;

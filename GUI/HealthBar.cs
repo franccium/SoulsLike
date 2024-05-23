@@ -1,10 +1,13 @@
 using Godot;
 using System;
 
-public partial class HealthBar : ProgressBar
+public partial class HealthBar : Sprite3D
 {
+    private TextureProgressBar _healthBar;
+
 	public override void _Ready()
 	{
+        _healthBar = GetNode<TextureProgressBar>("SubViewport/HealthBarProgressBar");
 	}
 
 	public override void _Process(double delta)
@@ -13,12 +16,12 @@ public partial class HealthBar : ProgressBar
 
     public void SetMaxHealth(int maxHealth)
     {
-        MaxValue = maxHealth;
+        _healthBar.MaxValue = maxHealth;
         SetHealth(maxHealth);
     }
 
     public void SetHealth(int health)
     {
-        Value = health;
+        _healthBar.Value = health;
     }
 }

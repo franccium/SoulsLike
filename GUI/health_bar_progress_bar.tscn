@@ -4,8 +4,17 @@
 [ext_resource type="Texture2D" uid="uid://bgbp1i0im2htl" path="res://GUI/health_bar_sprite.png" id="1_516yb"]
 
 [node name="HealthBarProgressBar" type="TextureProgressBar"]
-offset_right = 198.0
-offset_bottom = 43.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.0
+offset_top = -21.5
+offset_right = 99.0
+offset_bottom = 21.5
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 value = 50.0

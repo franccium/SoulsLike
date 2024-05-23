@@ -1,0 +1,22 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://chfsx073jf4js"
+path="res://.godot/imported/uploads_files_3795812_Viking+Shield.obj-208369453b635cd9199c2307f8248053.mesh"
+
+[deps]
+
+files=["res://.godot/imported/uploads_files_3795812_Viking+Shield.obj-208369453b635cd9199c2307f8248053.mesh"]
+
+source_file="res://Weapons/Shields/VikingShield/uploads_files_3795812_Viking+Shield.obj"
+dest_files=["res://.godot/imported/uploads_files_3795812_Viking+Shield.obj-208369453b635cd9199c2307f8248053.mesh", "res://.godot/imported/uploads_files_3795812_Viking+Shield.obj-208369453b635cd9199c2307f8248053.mesh"]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+optimize_mesh=true
+force_disable_mesh_compression=false
