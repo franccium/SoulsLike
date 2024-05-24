@@ -96,7 +96,7 @@ public partial class Sword : Weapon
                 _audioStreamPlayer.Play();
                 WeaponOwner.TakeStaminaDamage(_weaponAttributesComponent.BlockedByOtherStaminaCost);
                 shield.WeaponOwner.TakeStaminaDamage(_weaponAttributesComponent.BlockingAttackStaminaCost);
-                shield.WeaponOwner.Stagger();
+                //shield.WeaponOwner.Stagger();
             }
         }
     }

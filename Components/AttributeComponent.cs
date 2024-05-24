@@ -16,4 +16,9 @@ public partial class AttributeComponent : Node
     public float SideRollTimeScale { get; set; } = 2.7f;
 
     public float JumpVelocity { get; set; } = 5.0f;
+
+
+    public float GetHealthPercentage() => (float)Health / MaxHealth;
+
+    public float GetStaminaPercentage() => (float)Stamina / MaxStamina;
 }

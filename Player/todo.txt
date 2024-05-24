@@ -14,7 +14,13 @@ jak bedzie root motion to jakos to velocity floorowac zeby sie nie ruszal ciagle
 
 
 
-enemy ai
+enemy ai:
+parrying
+blocking
+attacking
+blocking with Sword
+dodge rolls
+strafing
 
 dodge roll
 

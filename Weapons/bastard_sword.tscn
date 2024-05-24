@@ -205,8 +205,6 @@ skeleton = NodePath("")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00304368, -0.412143, 0)
 shape = SubResource("BoxShape3D_s31wn")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00424194, -0.470123, 0.00384521)
-shape = SubResource("BoxShape3D_s31wn")
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
 [editable path="WeaponHitboxArea"]

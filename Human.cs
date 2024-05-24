@@ -60,10 +60,15 @@ public partial class Human : CharacterBody3D
 
     public override void _Process(double delta)
     {
+        UpdateLocomotionBlend((float)delta);
+    }
+
+    protected virtual void UpdateLocomotionBlend(float delta)
+    {
         Vector2 newDelta = _current2DDirection - _current2DVelocity;
-        if (newDelta.Length() > TransitionSpeed * (float)delta)
+        if (newDelta.Length() > TransitionSpeed * delta)
         {
-            newDelta = newDelta.Normalized() * TransitionSpeed * (float)delta;
+            newDelta = newDelta.Normalized() * TransitionSpeed * delta;
         }
         _current2DVelocity += newDelta;
 
@@ -333,7 +338,7 @@ public partial class Human : CharacterBody3D
 
     #region STAGGER
 
-    public void Stagger()
+    public virtual void Stagger()
     {
         //_upperBodyStateMachinePlayback.Travel("stagger");
         //_locomotionStateMachinePlayback.Travel("stagger");

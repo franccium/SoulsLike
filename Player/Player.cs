@@ -39,7 +39,7 @@ public partial class Player : Human
 
     public override void _PhysicsProcess(double delta)
     {
-        GD.Print("current animation state: " + CurrentAnimationState);
+        //GD.Print("current animation state: " + CurrentAnimationState);
         Vector3 velocity = Velocity;
 
         UpdateGroundedStateMovement(ref velocity, (float)delta);
@@ -265,12 +265,49 @@ public partial class Player : Human
 
     #region COMBAT
 
+    #region SIGNALS
+
+    [Signal] public delegate void PlayerAttackEventHandler();
+    [Signal] public delegate void PlayerBlockEventHandler();
+    [Signal] public delegate void PlayerDodgeRollEventHandler();
+    [Signal] public delegate void PlayerStaggeredEventHandler();
+
+    #endregion
+
     protected override void GatherCombatRequirements()
     {
         base.GatherCombatRequirements();
 
         _swordCombatComponent.EquippedSword.SetOwner(this);
         _shieldCombatComponent.EquippedShield.SetOwner(this);
+    }
+
+    protected override void Attack()
+    {
+        base.Attack();
+        
+        EmitSignal(nameof(PlayerAttack));
+    }
+
+    protected override void BlockConst()
+    {
+        base.BlockConst();
+
+        EmitSignal(nameof(PlayerBlock));
+    }
+
+    protected override void DodgeRoll()
+    {
+        base.DodgeRoll();
+
+        EmitSignal(nameof(PlayerDodgeRoll));
+    }
+
+    public override void Stagger()
+    {
+        base.Stagger();
+
+        EmitSignal(nameof(PlayerStaggered));
     }
 
     #endregion
