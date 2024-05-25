@@ -46,11 +46,10 @@ testowy level z grafika sensowna
 
 ocenianie efektywnosci ataku (np biorac kat obrotu miecza do ciala, zeby nie bylo ze atakowany bokiem jest przeciwnik)
 
+ranged ataki przeciwnika
 
 
-
-
-
+co sie dzieje jak czeka cos an animationFinished, ale robi się stagger ?? i inne takie przerwania
 
 
 

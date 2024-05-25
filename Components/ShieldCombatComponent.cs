@@ -3,12 +3,6 @@ using System;
 
 public partial class ShieldCombatComponent : CombatComponent
 {
-    public AnimationTree AnimationTree { get; set; }
-    public AnimationNodeStateMachinePlayback UpperBodyStateMachinePlayback { get; set; }
-    public AnimationNodeStateMachinePlayback LocomotionStateMachinePlayback { get; set; }
-
-    public Shield EquippedShield { get; set; }
-
     public Node3D RightHandContainer { get; set; }
     public Node3D LeftHandContainer { get; set; }
     public Node3D BackItemContainer { get; set; }
@@ -18,8 +12,6 @@ public partial class ShieldCombatComponent : CombatComponent
 
     public StringName OneHandParryName { get; set; } = "shield_block_1";
     public StringName OneHandConstantBlockName { get; set; } = "shield_block_1_const";
-
-    
 
     public override void _Ready()
     {
@@ -34,17 +26,19 @@ public partial class ShieldCombatComponent : CombatComponent
     {
         GD.Print("Shield Action");
         UpperBodyStateMachinePlayback.Travel(actionName);
-        LocomotionStateMachinePlayback.Travel(actionName);
+        
+        //LocomotionStateMachinePlayback.Travel(actionName);
 
         //? lowerBodyPlayback.Travel(_oneHandAttackName);
 
-        EquippedShield.Block();
+        EquippedWeapon.Block();
     }
 
     public void FinishShieldAction()
     {
         GD.Print("Finish Shield Action");
-        EquippedShield.FinishBlock();
+        EquippedWeapon.FinishBlock();
+        UpperBodyStateMachinePlayback.Travel(CombatUpperBodyIdleStateName);
     }
 
     public void OneHandParryShield()
@@ -65,36 +59,22 @@ public partial class ShieldCombatComponent : CombatComponent
     public void EquipShieldLeftHand()
     {
         GD.Print("Equip Shield Right Hand");
-        BackItemContainer.SwitchNodeOwnership(LeftHandContainer);
+        EquippedWeapon.EquipWeapon();
 
         CombatState = CombatStates.ShieldDrawnOneHanded;
         UpperBodyStateMachinePlayback.Travel(DrawShieldStateName);
 
         //LocomotionStateMachinePlayback.Travel(CombatWalkStateName);
-
-        DrawShield();
     }
 
     public void UnequipShieldLeftHand()
     {
         GD.Print("Unequip Shield Right Hand");
-        LeftHandContainer.SwitchNodeOwnership(BackItemContainer);
+        EquippedWeapon.UnequipWeapon();
 
         CombatState = CombatStates.ShieldSheathed;
         UpperBodyStateMachinePlayback.Travel(SheathShieldStateName);
 
         //LocomotionStateMachinePlayback.Travel(SheatShieldStateName);
-
-        SheathShield();
-    }
-
-    public void DrawShield()
-    {
-        EquippedShield.DrawWeapon();
-    }
-
-    public void SheathShield()
-    {
-        EquippedShield.SheathWeapon();
     }
 }

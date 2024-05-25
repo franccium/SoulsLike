@@ -26,14 +26,16 @@ public partial class Sword : Weapon
 	{
 	}
 
-    public override void DrawWeapon()
+    public override void EquipWeapon()
     {
+        base.EquipWeapon();
         _sheathMesh.Visible = false;
         _sheathMesh2.Visible = false;
     }
 
-    public override void SheathWeapon()
+    public override void UnequipWeapon()
     {
+        base.UnequipWeapon();
         _sheathMesh.Visible = true;
         _sheathMesh2.Visible = true;
     }

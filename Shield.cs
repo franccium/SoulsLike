@@ -25,14 +25,6 @@ public partial class Shield : Weapon
     {
     }
 
-    public override void DrawWeapon()
-    {
-    }
-
-    public override void SheathWeapon()
-    {
-    }
-
     public override void Attack()
     {
         //_hitboxArea.Monitoring = true;

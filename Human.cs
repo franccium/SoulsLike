@@ -37,6 +37,7 @@ public partial class Human : CharacterBody3D
         Parrying,
         BlockingConst,
         DodgeRoll,
+        SideDodgeRoll,
         Stagger,
     }
 
@@ -78,7 +79,7 @@ public partial class Human : CharacterBody3D
         }
         else
         {
-            _animationTree.Set(_swordCombatComponent.CombatLocomotionBlendPath, _current2DVelocity);
+            _animationTree.Set(SwordCombatComponent.CombatLocomotionBlendPath, _current2DVelocity);
         }
     }
 
@@ -90,7 +91,7 @@ public partial class Human : CharacterBody3D
 
         //tododirection and 2D direction
 
-        if (CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
+        if (IsInAction() && !IsBlockingConst())
         {
             UpdateAnimationRootMotion(ref velocity, (float)delta);
         }
@@ -142,28 +143,6 @@ public partial class Human : CharacterBody3D
         }
     }
 
-    protected virtual void OnAnimationFinished(StringName animName)
-    {
-        GD.Print("animation finished: " + animName);
-
-        switch (CurrentAnimationState)
-        {
-            case AnimationStates.Attacking:
-                _isAttacking = false;
-                _swordCombatComponent.FinishAttack();
-                break;
-            case AnimationStates.DodgeRoll:
-                OnDodgeRollFinished();
-                break;
-            case AnimationStates.Parrying:
-                _shieldCombatComponent.FinishShieldAction();
-                break;
-        }
-
-        CurrentAnimationState = AnimationStates.Idle;
-    }
-
-
     #region MOVEMENT
 
     public enum GroundedStates
@@ -197,7 +176,7 @@ public partial class Human : CharacterBody3D
 
                 if (_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
                 {
-                    _locomotionStateMachinePlayback.Travel(_swordCombatComponent.CombatWalkStateName);
+                    _locomotionStateMachinePlayback.Travel(SwordCombatComponent.CombatWalkStateName);
                     GD.Print("combat walk");
                 }
                 else
@@ -220,7 +199,7 @@ public partial class Human : CharacterBody3D
     {
         if (_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
         {
-            _locomotionStateMachinePlayback.Travel(_swordCombatComponent.CombatJumpStateName);
+            _locomotionStateMachinePlayback.Travel(SwordCombatComponent.CombatJumpStateName);
         }
         else
         {
@@ -263,8 +242,6 @@ public partial class Human : CharacterBody3D
     protected SwordCombatComponent _swordCombatComponent;
     protected ShieldCombatComponent _shieldCombatComponent;
 
-    protected bool _isAttacking = false;
-
     protected static readonly StringName _staggerStateName = "stagger";
     protected static readonly StringName _staggerOneShotRequestPath = "parameters/stagger_oneshot/request";
     protected static readonly StringName _staggerOneShotIsActivePath = "parameters/stagger_oneshot/active";
@@ -295,7 +272,7 @@ public partial class Human : CharacterBody3D
         _swordCombatComponent.UpperBodyStateMachinePlayback = _upperBodyStateMachinePlayback;
         _swordCombatComponent.LocomotionStateMachinePlayback = _locomotionStateMachinePlayback;
 
-        _swordCombatComponent.EquippedSword = _leftHipItemContainer.GetNode<Sword>("bastard_sword");
+        _swordCombatComponent.SetWeapon(this, _leftHipItemContainer.GetNode<Sword>("bastard_sword"), _leftHipItemContainer, _leftHipContainer, _rightHandContainer);
 
 
         _shieldCombatComponent = GetNode<ShieldCombatComponent>("ShieldCombatComponent");
@@ -306,35 +283,112 @@ public partial class Human : CharacterBody3D
         _shieldCombatComponent.AnimationTree = _animationTree;
         _shieldCombatComponent.UpperBodyStateMachinePlayback = _upperBodyStateMachinePlayback;
         _shieldCombatComponent.LocomotionStateMachinePlayback = _locomotionStateMachinePlayback;
-        _shieldCombatComponent.EquippedShield = _backItemContainer.GetNode<Shield>("VikingShield");
+        _shieldCombatComponent.SetWeapon(this, _backItemContainer.GetNode<Shield>("VikingShield"), _backItemContainer, _backContainer, _leftHandContainer);
 
         //InitialiseHitbox();
     }
 
+    #region QUEUED ATTACK
+
+    protected SwordCombatComponent.SwordAttacks _queuedAttack = SwordCombatComponent.SwordAttacks.None;
+
+    protected virtual void QueueAttack(SwordCombatComponent.SwordAttacks attack)
+    {
+        _queuedAttack = attack;
+    }
+
+    #endregion
+
+    #region ANIMATED ACTIONS
+
+    protected virtual void TakeAnimatedAction(AnimationStates action)
+    {
+        if (IsInAction() && !IsBlockingConst())
+            return;
+            
+        SetAnimationState(action);
+    }
+
     protected virtual void Attack()
     {
-        _isAttacking = true;
-        _rollDirection = _movementDirection;
-        CurrentAnimationState = AnimationStates.Attacking;
+        TakeAnimatedAction(AnimationStates.Attacking);
     }
 
     protected virtual void Parry()
     {
-        _rollDirection = _movementDirection;
-        CurrentAnimationState = AnimationStates.Parrying;
+        TakeAnimatedAction(AnimationStates.Parrying);
     }
 
     protected virtual void BlockConst()
     {
-        CurrentAnimationState = AnimationStates.BlockingConst;
-        _currentSpeed = _attributeComponent.BlockingMovementSpeed;
+        TakeAnimatedAction(AnimationStates.BlockingConst);
     }
 
     protected virtual void StopBlockConst()
     {
-        CurrentAnimationState = AnimationStates.Idle;
-        _currentSpeed = _attributeComponent.MovementSpeed;
+        TakeAnimatedAction(AnimationStates.Idle);
     }
+
+    protected virtual void SetAnimationState(AnimationStates state)
+    {
+        CurrentAnimationState = state;
+        _rollDirection = _movementDirection;
+
+        switch (state)
+        {
+            case AnimationStates.Attacking:
+                _swordCombatComponent.SwordAttack(_queuedAttack);
+                _queuedAttack = SwordCombatComponent.SwordAttacks.None;
+                break;
+            case AnimationStates.Parrying:
+                _shieldCombatComponent.OneHandParryShield();
+                break;
+            case AnimationStates.BlockingConst:
+                _currentSpeed = _attributeComponent.BlockingMovementSpeed;
+                _shieldCombatComponent.OneHandConstBlockShield();
+                break;
+            case AnimationStates.Idle:
+                _currentSpeed = _attributeComponent.MovementSpeed;
+                _shieldCombatComponent.FinishShieldAction();
+                break;
+            case AnimationStates.DodgeRoll:
+                _animationTree.Set(_dodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+                IsInvincible = true;
+                break;
+            case AnimationStates.SideDodgeRoll:
+                _animationTree.Set(_sideDodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+                IsInvincible = true;
+                break;
+            case AnimationStates.Stagger:
+                _movementDirection = Vector3.Zero;
+                _animationTree.Set(_staggerOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+                break;
+        }
+    }
+
+    #region ON ANIMATION FINISHED
+
+    protected virtual void OnAnimationFinished(StringName animName)
+    {
+        GD.Print("animation finished: " + animName);
+
+        switch (CurrentAnimationState)
+        {
+            case AnimationStates.Attacking:
+                _swordCombatComponent.FinishAttack();
+                break;
+            case AnimationStates.Parrying:
+                _shieldCombatComponent.FinishShieldAction();
+                break;
+            case AnimationStates.DodgeRoll:
+                OnDodgeRollFinished();
+                break;
+        }
+
+        CurrentAnimationState = AnimationStates.Idle;
+    }
+
+    #endregion
 
     #region STAGGER
 
@@ -343,8 +397,7 @@ public partial class Human : CharacterBody3D
         //_upperBodyStateMachinePlayback.Travel("stagger");
         //_locomotionStateMachinePlayback.Travel("stagger");
         //_animationTree.
-        _movementDirection = Vector3.Zero;
-        _animationTree.Set(_staggerOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+        TakeAnimatedAction(AnimationStates.Stagger);
 
         //todo disable actions
     }
@@ -373,20 +426,16 @@ public partial class Human : CharacterBody3D
 
     protected virtual void DodgeRoll()
     {
-        _rollDirection = _movementDirection;
-        _animationTree.Set(_dodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+        TakeAnimatedAction(AnimationStates.DodgeRoll);
         GD.Print("dodge roll");
         //_hitboxArea.Monitoring = false; // wont work cause its the world collision shape that is being checked by swords area
-        IsInvincible = true;
         //Velocity = _movementDirection * _attributeComponent.RollSpeed;
     }
 
     protected virtual void SideDodgeRoll()
     {
-        _rollDirection = _movementDirection;
-        _animationTree.Set(_sideDodgeRollOneShotRequestPath, (int)AnimationNodeOneShot.OneShotRequest.Fire);
+        TakeAnimatedAction(AnimationStates.SideDodgeRoll);
         GD.Print("side dodge roll");
-        IsInvincible = true;
         //Velocity = _movementDirection * _attributeComponent.RollSpeed;
     }
 
@@ -403,7 +452,11 @@ public partial class Human : CharacterBody3D
 
     #endregion
 
-    public bool IsInAction() => IsStaggered() || IsRolling();
+    //!public bool IsInAction() => IsStaggered() || IsRolling();
+    public bool IsInAction() => CurrentAnimationState != AnimationStates.Idle;
+    public bool IsBlockingConst() => CurrentAnimationState == AnimationStates.BlockingConst;
+
+    #endregion
 
     #region HITBOX
 

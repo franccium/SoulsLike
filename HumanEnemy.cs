@@ -19,13 +19,12 @@ public partial class HumanEnemy : Human
     public override void _Process(double delta)
     {
         _current2DDirection = new Vector2(_movementDirection.X, _movementDirection.Z);
-        
-        if(_playerSeen)
+
+        if (_playerSeen)
         {
-            if(!_isTakingAction)
-                TakeAction();
+            TakeAction();
         }
-        else 
+        else
             ScanForPlayerSeen();
 
         base._Process(delta);
@@ -37,9 +36,15 @@ public partial class HumanEnemy : Human
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
         // follow player
-        if(_shouldMoveUpToPlayer)
+        if (_shouldMoveUpToPlayer)
             MoveInPlayersDirection();
-        else 
+        else if (_currentAIState == AIStates.Run)
+            Run();
+        else if (_currentAIState == AIStates.MoveAround)
+            MoveAround();
+        else if (_currentAIState == AIStates.Strafe)
+            Strafe();
+        else
             Patrol();
 
         base.UpdateMovementInDirection(ref velocity, (float)delta);
@@ -51,28 +56,34 @@ public partial class HumanEnemy : Human
     protected virtual void TakeAction()
     {
         GD.Print("anim state: " + CurrentAnimationState);
-        if(CurrentAnimationState != AnimationStates.Idle)
+        if (CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
             return;
 
-        if(GetDistanceToPlayer() > _actionRange)
+        GD.Print("distance to player: " + GetDistanceToPlayer() + " action range: " + _actionRange);
+
+        if (GetDistanceToPlayer() > _actionRange)
         {
             _shouldMoveUpToPlayer = true;
             return;
         }
-        else 
+        else
         {
             _shouldMoveUpToPlayer = false;
             if (_currentAIState == AIStates.MoveUp) // in order to not get stuck with taking action of moving, as its not an animation
                 _isTakingAction = false;
         }
 
+        //?if(_isTakingAction) not sure yet, maybe, but after reseting takingaction for shouldmoveuptoplayer like it is now, and in case of things like strafe and stuff id need a way to reset without relying on animation finished
+        //?return;
+        //!!!! StopBlockConst();
+
         UpdateBehaviourLevels();
         UpdateMovementWeigths();
         UpdateRecoveringWeights();
 
-        foreach(var (weight, action) in _weightedActions)
+        foreach (var (weight, action) in _weightedActions)
         {
-            if(weight() > 0f)
+            if (weight() > 0f)
                 GD.Print(weight() + " : " + action.Method.Name);
         }
 
@@ -92,7 +103,6 @@ public partial class HumanEnemy : Human
 
     protected float _attackRange = 5f;
     protected bool _inAttackRange = false;
-    protected bool _queuedAttack = false;
 
     protected float _actionRange = 10f;
     protected bool _shouldMoveUpToPlayer = false;
@@ -101,10 +111,7 @@ public partial class HumanEnemy : Human
     {
         base.GatherCombatRequirements();
 
-        _swordCombatComponent.EquippedSword.SetOwner(this);
-        _shieldCombatComponent.EquippedShield.SetOwner(this);
-
-        _attackRange = _swordCombatComponent.EquippedSword.GetStats().AttackRange;
+        _attackRange = _swordCombatComponent.EquippedWeapon.GetStats().AttackRange;
     }
 
     protected virtual void ScanForPlayerSeen()
@@ -129,27 +136,97 @@ public partial class HumanEnemy : Human
 
     protected virtual void ScanForAttackInRange()
     {
-        if (GlobalPosition.DistanceTo(_player.GlobalPosition) < _attackRange)
+        // not used now
+        if (GetPlayerInAttackRange())
         {
             _inAttackRange = true;
-            _queuedAttack = true;
         }
-        else 
+        else
         {
             _inAttackRange = false;
         }
     }
 
+    protected bool GetPlayerInAttackRange()
+    {
+        return GlobalPosition.DistanceTo(_player.GlobalPosition) < _attackRange;
+    }
+
+    #region MOVEMENT ACTIONS
+
+    /// <summary>
+    /// wait until seeing the player
+    /// </summary>
     protected virtual void Patrol()
     {
         _movementDirection = Vector3.Zero;
     }
 
+    /// <summary>
+    /// move straight to the player
+    /// </summary>
     protected virtual void MoveInPlayersDirection()
     {
         GD.Print("Moving to player");
         _movementDirection = GlobalPosition.DirectionTo(_player.GlobalPosition);
     }
+
+    /// <summary>
+    /// run from the player
+    /// </summary>
+    protected virtual void Run()
+    {
+        // run
+        GD.Print("Running");
+        _movementDirection = -GlobalPosition.DirectionTo(_player.GlobalPosition);
+
+        if (GetDistanceToPlayer() > _detectionRange + 5f)
+            _currentAIState = AIStates.Patrol;
+    }
+
+    /// <summary>
+    /// move around the player, try to get at his back
+    /// </summary>
+    protected virtual void MoveAround()
+    {
+        GD.Print("Moving around player");
+
+        Vector3 directionToPlayer = GlobalPosition.DirectionTo(_player.GlobalPosition);
+        _movementDirection = directionToPlayer.Rotated(Vector3.Up, Mathf.Pi / 2);
+
+        float angleToPlayer = directionToPlayer.AngleTo(_movementDirection);
+        if(Mathf.Abs(angleToPlayer - Mathf.Pi) < 0.1f)
+        {
+            _movementDirection = Vector3.Zero;
+            // somehow reset to get out of this state if its necessary, but the calculation of exact 180 degrees is not realistic ever
+        }
+    }
+
+    protected float _strafeDir = 1;
+    /// <summary>
+    /// move in an arc in front of the player
+    /// </summary> <summary>
+    protected virtual void Strafe()
+    {
+        GD.Print("Strafing");
+        _movementDirection = GlobalPosition.DirectionTo(_player.GlobalPosition);
+
+        Vector3 directionToPlayer = GlobalPosition.DirectionTo(_player.GlobalPosition);
+        float dirRotation = Mathf.Pi / 2 * _strafeDir;
+        _movementDirection = directionToPlayer.Rotated(Vector3.Up, dirRotation);
+
+        float angleToPlayer = directionToPlayer.AngleTo(_movementDirection);
+        if (Mathf.Abs(angleToPlayer - Mathf.Pi / 4) < 10f)
+        {
+            _movementDirection = Vector3.Zero;
+            _strafeDir = -_strafeDir;
+            // somehow reset to get out of this state if its necessary
+        }
+    }
+
+    #endregion
+
+    #region ON ANIMATION FINISHED
 
     protected override void OnAnimationFinished(StringName animName)
     {
@@ -158,7 +235,6 @@ public partial class HumanEnemy : Human
         switch (CurrentAnimationState)
         {
             case AnimationStates.Attacking:
-                _isAttacking = false;
                 _swordCombatComponent.FinishAttack();
                 break;
             case AnimationStates.DodgeRoll:
@@ -174,12 +250,16 @@ public partial class HumanEnemy : Human
         CurrentAnimationState = AnimationStates.Idle;
     }
 
+    #endregion
+
+    #region INITIALISING ACTIONS
+
     protected virtual void InitialiseAttack()
     {
         GD.Print("Enemy trying to attack");
-        _queuedAttack = false;
 
-        _swordCombatComponent.OneHandAttackSword();
+        _queuedAttack = SwordCombatComponent.SwordAttacks.OneHandAttack;
+        Attack();
         _currentAIState = AIStates.Attack;
     }
 
@@ -190,7 +270,6 @@ public partial class HumanEnemy : Human
         if (CurrentAnimationState == AnimationStates.Idle)
         {
             BlockConst();
-            _shieldCombatComponent.OneHandConstBlockShield();
             _currentAIState = AIStates.Block;
         }
     }
@@ -200,7 +279,6 @@ public partial class HumanEnemy : Human
         GD.Print("Enemy trying to parry");
 
         Parry();
-        _shieldCombatComponent.OneHandParryShield();
         _currentAIState = AIStates.Parry;
     }
 
@@ -220,7 +298,7 @@ public partial class HumanEnemy : Human
 
     protected virtual void InitialiseMoveUp()
     {
-        GD.Print("Enemy trying to move");
+        GD.Print("Enemy trying to move up");
 
         _shouldMoveUpToPlayer = true;
         _currentAIState = AIStates.MoveUp;
@@ -244,7 +322,7 @@ public partial class HumanEnemy : Human
     {
         GD.Print("Enemy trying to counter attack");
 
-        _swordCombatComponent.OneHandAttackSword();
+        _swordCombatComponent.SwordAttack(SwordCombatComponent.SwordAttacks.StrongOneHandAttack);
         _currentAIState = AIStates.CounterAttack;
     }
 
@@ -268,6 +346,8 @@ public partial class HumanEnemy : Human
 
         _currentAIState = AIStates.TryRecover;
     }
+
+    #endregion
 
     #endregion
 
@@ -312,6 +392,8 @@ public partial class HumanEnemy : Human
 
     protected float _tryHealWeight = 0.5f;
     protected float _tryRecoverWeight = 0.5f;
+
+    #region AI WEIGHTS INITIALISATION
 
     protected virtual void InitialiseAI()
     {
@@ -364,6 +446,10 @@ public partial class HumanEnemy : Human
         };
     }
 
+    #endregion
+
+    #region BEHAVIOUR LEVELS
+
     protected virtual void UpdateBehaviourLevels()
     {
         // when low on hp, defensive level increases
@@ -371,12 +457,40 @@ public partial class HumanEnemy : Human
         // or it should be inverted idk yet
     }
 
+    #endregion
+
+    #region MOVEMENT WEIGHTS
+
     protected virtual void UpdateMovementWeigths()
     {
         // when player tries to go away, move to him
-        if(GetDistanceToPlayer() > _attackRange)
+        if (GetDistanceToPlayer() > _attackRange)
+        {
             _moveUpWeight = 2.5f;
+            _dodgeRollWeight = 0.3f; // make sure its a roll in direction of the player
+        }
     }
+
+    #endregion
+
+    #region RECOVERING WEIGHTS
+
+    protected virtual void UpdateRecoveringWeights()
+    {
+        if (_attributeComponent.GetHealthPercentage() > 0.65f)
+            _tryHealWeight = 0f;
+        else
+            _tryHealWeight = _defensiveLevel * 1 / _attributeComponent.GetHealthPercentage();
+
+        if (_attributeComponent.GetStaminaPercentage() > 0.65f)
+            _tryRecoverWeight = 0f;
+        else
+            _tryRecoverWeight = _aggresiveLevel * 1 / _attributeComponent.GetStaminaPercentage();
+    }
+
+    #endregion
+
+    #region RANDOM ACTION
 
     protected virtual void TakeRandomWeightedAction()
     {
@@ -384,10 +498,10 @@ public partial class HumanEnemy : Human
 
         float randomWeight = (float)GD.RandRange(0, totalWeight) + 0.1f;
 
-        foreach(var (weight, action) in _weightedActions)
+        foreach (var (weight, action) in _weightedActions)
         {
             randomWeight -= weight();
-            if(randomWeight <= 0f)
+            if (randomWeight <= 0f)
             {
                 action();
                 break;
@@ -397,18 +511,7 @@ public partial class HumanEnemy : Human
         _isTakingAction = true;
     }
 
-    protected virtual void UpdateRecoveringWeights()
-    {
-        if(_attributeComponent.GetHealthPercentage() > 0.65f)
-            _tryHealWeight = 0f;
-        else
-            _tryHealWeight = _defensiveLevel * 1 / _attributeComponent.GetHealthPercentage();
-        
-        if(_attributeComponent.GetStaminaPercentage() > 0.65f)
-            _tryRecoverWeight = 0f;
-        else
-            _tryRecoverWeight = _aggresiveLevel * 1 / _attributeComponent.GetStaminaPercentage();
-    }
+    #endregion
 
     #region PLAYER SIGNALS
 
@@ -424,6 +527,12 @@ public partial class HumanEnemy : Human
     {
         ZeroOutWeights();
 
+        if (!GetPlayerInAttackRange())
+        {
+            UpdateMovementWeigths();
+            return;
+        }
+
         _blockWeight = 0.6f + _defensiveLevel;
         _dodgeRollWeight = 0.4f + _defensiveLevel;
         _attackWeight = 0.3f + _aggresiveLevel;
@@ -437,6 +546,12 @@ public partial class HumanEnemy : Human
     public virtual void PlayerBlockWeightsAdjustment()
     {
         ZeroOutWeights();
+
+        if (!GetPlayerInAttackRange())
+        {
+            UpdateMovementWeigths();
+            return;
+        }
 
         _moveAroundWeight = 0.5f + _aggresiveLevel;
         _attackWeight = 0.3f + _aggresiveLevel;
@@ -464,6 +579,12 @@ public partial class HumanEnemy : Human
     public virtual void PlayerStaggeredWeightsAdjustment()
     {
         ZeroOutWeights();
+
+        if (!GetPlayerInAttackRange())
+        {
+            UpdateMovementWeigths();
+            return;
+        }
 
         _counterAttackWeight = 0.8f + _aggresiveLevel;
         _attackWeight = 0.2f + _aggresiveLevel;

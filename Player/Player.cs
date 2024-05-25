@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections;
 
 public partial class Player : Human
 {
@@ -35,18 +36,23 @@ public partial class Player : Human
         _current2DDirection = _currentInput;
 
         base._Process(delta);
+
+        if(!IsInAction() && _queuedAttack != SwordCombatComponent.SwordAttacks.None)
+        {
+            Attack();
+        }
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        //GD.Print("current animation state: " + CurrentAnimationState);
+        GD.Print("current animation state: " + CurrentAnimationState);
         Vector3 velocity = Velocity;
 
         UpdateGroundedStateMovement(ref velocity, (float)delta);
 
         UpdateRotation((float)delta);
 
-        if(CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
+        if(IsInAction() && !IsBlockingConst())
         {
             UpdateAnimationRootMotion(ref velocity, (float)delta);
         }
@@ -107,11 +113,11 @@ public partial class Player : Human
                     DodgeRoll();
                 }
             }
-            else if(Input.IsActionPressed("space"))
+            else if(Input.IsActionPressed("v"))
             {
                 BeginSprint();
             }
-            else if(Input.IsActionJustReleased("space"))
+            else if(Input.IsActionJustReleased("v"))
             {
                 EndSprint();
             }
@@ -146,24 +152,17 @@ public partial class Player : Human
 
         if(Input.IsActionJustPressed("lmb"))
         {
-            if(IsInAction())
-            {
-                return;
-            }
-
             if(_swordCombatComponent.CombatState == CombatComponent.CombatStates.SwordDrawnOneHanded)
             {
                 StringName currentAnimation = _upperBodyStateMachinePlayback.GetCurrentNode().ToString();
-                if(currentAnimation == _swordCombatComponent.OneHandAttackName)
+                if(currentAnimation == SwordCombatComponent.OneHandAttackName)
                 {
-                    Attack();
-                    _swordCombatComponent.OneHandAltAttackSword();
+                    QueueAttack(SwordCombatComponent.SwordAttacks.AltOneHandAttack);
                     return;
                 }
-                else if(currentAnimation == _swordCombatComponent.AltOneHandAttackName)
+                else if(currentAnimation == SwordCombatComponent.AltOneHandAttackName)
                 {
-                    Attack();
-                    _swordCombatComponent.StrongOneHandAttackSword();
+                    QueueAttack(SwordCombatComponent.SwordAttacks.StrongOneHandAttack);
                     return;
                 }
 
@@ -171,50 +170,40 @@ public partial class Player : Human
                 {
                     if (_altModifier)
                     {
-                        Attack();
-                        _swordCombatComponent.StrongAltOneHandAttackSword();
+                        QueueAttack(SwordCombatComponent.SwordAttacks.StrongAltOneHandAttack);
                     }
                     else
                     {
-                        Attack();
-                        _swordCombatComponent.StrongOneHandAttackSword();
+                        QueueAttack(SwordCombatComponent.SwordAttacks.StrongOneHandAttack);
                     }
                 }
                 else if (_altModifier)
                 {
-                    Attack();
-                    _swordCombatComponent.OneHandAltAttackSword();
+                    QueueAttack(SwordCombatComponent.SwordAttacks.AltOneHandAttack); 
                 }
                 else
                 {
-                    Attack();
-                    _swordCombatComponent.OneHandAttackSword();
+                    QueueAttack(SwordCombatComponent.SwordAttacks.OneHandAttack);
                 }
             }
         }
 
-        if(CurrentAnimationState == AnimationStates.BlockingConst && Input.IsActionJustReleased("rmb"))
+        if (_shieldCombatComponent.CombatState == CombatComponent.CombatStates.ShieldDrawnOneHanded)
         {
-            StopBlockConst();
-            _shieldCombatComponent.FinishShieldAction();
-        }
-        else if(Input.IsActionPressed("rmb") && CurrentAnimationState != AnimationStates.BlockingConst)
-        {
-            BlockConst();
-            _shieldCombatComponent.OneHandConstBlockShield();
-        }
-
-        if(Input.IsActionJustPressed("rmb") && _shiftModifier)
-        {
-            if (IsInAction())
+            if (IsBlockingConst() && Input.IsActionJustReleased("rmb"))
             {
-                return;
+                GD.Print("Stop Block");
+                StopBlockConst();
+            }
+            else if (!IsBlockingConst() && Input.IsActionPressed("rmb"))
+            {
+                GD.Print("Block");
+                BlockConst();
             }
 
-            if (_shieldCombatComponent.CombatState == CombatComponent.CombatStates.ShieldDrawnOneHanded)
+            if (Input.IsActionJustPressed("rmb") && _shiftModifier)
             {
                 Parry();
-                _shieldCombatComponent.OneHandParryShield();
             }
         }
     }
@@ -225,7 +214,7 @@ public partial class Player : Human
 
     private void UpdateInputMovement(ref Vector3 velocity, float delta)
     {
-        if (IsInAction())
+        if (IsInAction() && !IsBlockingConst())
         {
             return;
         }
@@ -277,15 +266,12 @@ public partial class Player : Human
     protected override void GatherCombatRequirements()
     {
         base.GatherCombatRequirements();
-
-        _swordCombatComponent.EquippedSword.SetOwner(this);
-        _shieldCombatComponent.EquippedShield.SetOwner(this);
     }
 
     protected override void Attack()
     {
         base.Attack();
-        
+
         EmitSignal(nameof(PlayerAttack));
     }
 

@@ -13,6 +13,10 @@ public partial class Weapon : Node3D
 
     protected AudioStreamPlayer _audioStreamPlayer;
 
+    protected Node3D _weaponContainer;
+    protected Node3D _sheathedContainer;
+    protected Node3D _equippedContainer;
+
     public override void _Ready()
     {
         _hitboxArea = (WeaponHitboxArea)GetNode<Area3D>("WeaponHitboxArea");
@@ -23,12 +27,21 @@ public partial class Weapon : Node3D
         _hitboxArea.Monitoring = false;
 
         _audioStreamPlayer = GetNode<AudioStreamPlayer>("AudioStreamPlayer");
+        _audioStreamPlayer.VolumeDb = -10;
 
         _weaponAttributesComponent = new WeaponAttributesComponent();
     }
 
     public override void _Process(double delta)
     {
+    }
+
+    public virtual void SetProperties(Human owner, Node3D weaponContainer, Node3D sheathedContainer, Node3D equippedContainer)
+    {
+        SetOwner(owner);
+        _weaponContainer = weaponContainer;
+        _sheathedContainer = sheathedContainer;
+        _equippedContainer = equippedContainer;
     }
 
     public virtual void SetOwner(Human owner)
@@ -43,12 +56,19 @@ public partial class Weapon : Node3D
         return _weaponAttributesComponent;
     }
 
-    public virtual void DrawWeapon()
+    /// <summary>
+    /// changes ownership of the rightHipItemContainer to the leftHandContainer
+    /// </summary>
+    public virtual void EquipWeapon()
     {
+        GD.Print("Equip Weapon");
+        _weaponContainer.SwitchNodeOwnership(_equippedContainer);
     }
 
-    public virtual void SheathWeapon()
+    public virtual void UnequipWeapon()
     {
+        GD.Print("Unequip Weapon");
+        _weaponContainer.SwitchNodeOwnership(_sheathedContainer);
     }
 
     public virtual void Attack()
