@@ -10,7 +10,7 @@ public partial class Shield : Weapon
     public override void _Ready()
     {
         base._Ready();
-        _hitboxArea.Monitoring = true;
+        HitboxArea.Monitoring = true;
         //? make this hitbox area always monitor to make gampelay more "fun"
 
         _blockSound = ResourceLoader.Load<AudioStream>("res://Weapons/SoundEffects/sword_strike_metal_shield_armour_clang_001_95364.mp3");
@@ -55,6 +55,7 @@ public partial class Shield : Weapon
 
     public override void OnHitboxAreaBodyEntered(Node3D body)
     {
+        /*
         if(!_isAttacking) 
             return;
 
@@ -78,6 +79,7 @@ public partial class Shield : Weapon
                 _audioStreamPlayer.Play();
             }
         }
+        */
     }
 
     public override void OnHitboxAreaOtherAreaEntered(Area3D area)

@@ -45,7 +45,7 @@ public partial class Player : Human
 
     public override void _PhysicsProcess(double delta)
     {
-        GD.Print("current animation state: " + CurrentAnimationState);
+        //GD.Print("current animation state: " + CurrentAnimationState);
         Vector3 velocity = Velocity;
 
         UpdateGroundedStateMovement(ref velocity, (float)delta);
@@ -268,7 +268,7 @@ public partial class Player : Human
         base.GatherCombatRequirements();
     }
 
-    protected override void Attack()
+    protected override void Attack(Vector3? direction = null)
     {
         base.Attack();
 
@@ -282,7 +282,7 @@ public partial class Player : Human
         EmitSignal(nameof(PlayerBlock));
     }
 
-    protected override void DodgeRoll()
+    protected override void DodgeRoll(Vector3? direction = null)
     {
         base.DodgeRoll();
 

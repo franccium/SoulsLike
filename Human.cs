@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class Human : CharacterBody3D
 {
@@ -55,6 +56,7 @@ public partial class Human : CharacterBody3D
         GatherCombatRequirements();
         GatherAttributeRequirements();
         InitialiseGUIElements();
+        InitialiseHurboxes();
 
         _currentSpeed = _attributeComponent.MovementSpeed;
     }
@@ -109,8 +111,8 @@ public partial class Human : CharacterBody3D
     {
         Vector3 rootMotionPosition = _animationTree.GetRootMotionPosition();
 
-        if (_rollDirection != Vector3.Zero)
-            Rotation = new Vector3(Rotation.X, Mathf.Atan2(-_rollDirection.X, -_rollDirection.Z), Rotation.Z);
+        if (_animationDirection != Vector3.Zero)
+            Rotation = new Vector3(Rotation.X, Mathf.Atan2(-_animationDirection.X, -_animationDirection.Z), Rotation.Z);
 
         Quaternion currentRotation = Transform.Basis.GetRotationQuaternion();
 
@@ -301,22 +303,22 @@ public partial class Human : CharacterBody3D
 
     #region ANIMATED ACTIONS
 
-    protected virtual void TakeAnimatedAction(AnimationStates action)
+    protected virtual void TakeAnimatedAction(AnimationStates action, Vector3? direction = null)
     {
         if (IsInAction() && !IsBlockingConst())
             return;
-            
-        SetAnimationState(action);
+
+        SetAnimationState(action, direction);
     }
 
-    protected virtual void Attack()
+    protected virtual void Attack(Vector3? direction = null)
     {
-        TakeAnimatedAction(AnimationStates.Attacking);
+        TakeAnimatedAction(AnimationStates.Attacking, direction);
     }
 
-    protected virtual void Parry()
+    protected virtual void Parry(Vector3? direction = null)
     {
-        TakeAnimatedAction(AnimationStates.Parrying);
+        TakeAnimatedAction(AnimationStates.Parrying, direction);
     }
 
     protected virtual void BlockConst()
@@ -329,10 +331,10 @@ public partial class Human : CharacterBody3D
         TakeAnimatedAction(AnimationStates.Idle);
     }
 
-    protected virtual void SetAnimationState(AnimationStates state)
+    protected virtual void SetAnimationState(AnimationStates state, Vector3? direction = null)
     {
         CurrentAnimationState = state;
-        _rollDirection = _movementDirection;
+        _animationDirection = direction ?? _movementDirection;
 
         switch (state)
         {
@@ -416,7 +418,7 @@ public partial class Human : CharacterBody3D
 
     public bool IsInvincible = false;
 
-    protected Vector3 _rollDirection = Vector3.Zero;
+    protected Vector3 _animationDirection = Vector3.Zero;
 
     protected virtual void GatherDodgerollRequirements()
     {
@@ -424,9 +426,9 @@ public partial class Human : CharacterBody3D
         _animationTree.Set("parameters/side_dodge_roll_time_scale/scale", _attributeComponent.SideRollTimeScale);
     }
 
-    protected virtual void DodgeRoll()
+    protected virtual void DodgeRoll(Vector3? direction = null)
     {
-        TakeAnimatedAction(AnimationStates.DodgeRoll);
+        TakeAnimatedAction(AnimationStates.DodgeRoll, direction);
         GD.Print("dodge roll");
         //_hitboxArea.Monitoring = false; // wont work cause its the world collision shape that is being checked by swords area
         //Velocity = _movementDirection * _attributeComponent.RollSpeed;
@@ -439,13 +441,12 @@ public partial class Human : CharacterBody3D
         //Velocity = _movementDirection * _attributeComponent.RollSpeed;
     }
 
-    // called by the dodge roll animation for now
     protected virtual void OnDodgeRollFinished()
     {
         GD.Print("dodge roll finished");
         //_hitboxArea.Monitoring = true;
         IsInvincible = false;
-        _rollDirection = Vector3.Zero;
+        _animationDirection = Vector3.Zero;
     }
 
     public bool IsRolling() => _animationTree.Get(_dodgeRollOneShotIsActivePath).AsBool() || _animationTree.Get(_sideDodgeRollOneShotIsActivePath).AsBool();
@@ -548,6 +549,73 @@ public partial class Human : CharacterBody3D
             Stagger();
             _attributeComponent.Stamina = _attributeComponent.MaxStamina;
         }
+    }
+
+    #endregion
+
+    #region HURTBOXES
+
+    protected enum HurtboxTypes
+    {
+        HeadHbox,
+        BodyHbox,
+        LeftArmHbox,
+        RightArmHbox,
+        LeftLegHbox,
+        RightLegHbox,
+        StomachHbox,
+        HipsHbox,
+    }
+
+    protected Dictionary<Area3D, HurtboxTypes> _hurtboxes = new Dictionary<Area3D, HurtboxTypes>();
+
+    protected virtual void InitialiseHurboxes()
+    {
+        Skeleton3D skeleton = GetNode<Skeleton3D>("CharacterRig/Armature_001/Skeleton3D");
+        foreach (Node3D node in skeleton.GetChildren())
+        {
+            if (node is BoneAttachment3D)
+            {
+                Area3D area = node.GetNodeOrNull<Area3D>("Area3D");
+                if (area != null)
+                {
+                    GD.Print("found hurtbox: " + node.Name);
+                    _hurtboxes.Add(area, (HurtboxTypes)Enum.Parse(typeof(HurtboxTypes), node.Name));
+
+                    area.AreaEntered += (otherArea) => OnHurtboxAreaEntered(otherArea, area);
+                }
+            }
+        }
+    }
+
+    protected virtual void OnHurtboxAreaEntered(Area3D area, Area3D hurtbox) //todo bind the appropriate hurtbox to the signal
+    {
+        if(area is not WeaponHitboxArea weaponHitboxArea)
+            return;
+
+        if (weaponHitboxArea.Weapon.WeaponOwner == this)
+            return;
+        
+        if (weaponHitboxArea.Weapon is Sword sword)
+        {
+            GD.Print("sword hit hurtbox: " + _hurtboxes[hurtbox].ToString() + " of " + this.GetType().Name);
+        }
+        /*
+        if(area.GetParent() == this)
+            return;
+        if (_hurtboxes.ContainsKey(area))
+        {
+            GD.Print("hurtboxes entered each other");
+            return;
+        }
+        if(area == _swordCombatComponent.EquippedWeapon.HitboxArea)
+        {
+            GD.Print("own sword hit hurtbox");
+            return;
+        }
+
+        GD.Print("entity: " + this.GetType().Name + " had its hurtbox hit: " + hurtbox.Name + " " + _hurtboxes[hurtbox].ToString() + " by " + area.GetParent().GetType().Name);
+        */
     }
 
     #endregion

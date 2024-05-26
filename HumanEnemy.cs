@@ -53,43 +53,6 @@ public partial class HumanEnemy : Human
         MoveAndSlide();
     }
 
-    protected virtual void TakeAction()
-    {
-        GD.Print("anim state: " + CurrentAnimationState);
-        if (CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
-            return;
-
-        GD.Print("distance to player: " + GetDistanceToPlayer() + " action range: " + _actionRange);
-
-        if (GetDistanceToPlayer() > _actionRange)
-        {
-            _shouldMoveUpToPlayer = true;
-            return;
-        }
-        else
-        {
-            _shouldMoveUpToPlayer = false;
-            if (_currentAIState == AIStates.MoveUp) // in order to not get stuck with taking action of moving, as its not an animation
-                _isTakingAction = false;
-        }
-
-        //?if(_isTakingAction) not sure yet, maybe, but after reseting takingaction for shouldmoveuptoplayer like it is now, and in case of things like strafe and stuff id need a way to reset without relying on animation finished
-        //?return;
-        //!!!! StopBlockConst();
-
-        UpdateBehaviourLevels();
-        UpdateMovementWeigths();
-        UpdateRecoveringWeights();
-
-        foreach (var (weight, action) in _weightedActions)
-        {
-            if (weight() > 0f)
-                GD.Print(weight() + " : " + action.Method.Name);
-        }
-
-        TakeRandomWeightedAction();
-    }
-
     protected virtual float GetDistanceToPlayer()
     {
         return GlobalPosition.DistanceTo(_player.GlobalPosition);
@@ -101,7 +64,7 @@ public partial class HumanEnemy : Human
     protected bool _playerSeen = false;
     protected bool _inCombat = false;
 
-    protected float _attackRange = 5f;
+    protected float _attackRange = 3f;
     protected bool _inAttackRange = false;
 
     protected float _actionRange = 10f;
@@ -167,7 +130,7 @@ public partial class HumanEnemy : Human
     /// </summary>
     protected virtual void MoveInPlayersDirection()
     {
-        GD.Print("Moving to player");
+        //GD.Print("Moving to player");
         _movementDirection = GlobalPosition.DirectionTo(_player.GlobalPosition);
     }
 
@@ -177,7 +140,7 @@ public partial class HumanEnemy : Human
     protected virtual void Run()
     {
         // run
-        GD.Print("Running");
+        //*GD.Print("Running");
         _movementDirection = -GlobalPosition.DirectionTo(_player.GlobalPosition);
 
         if (GetDistanceToPlayer() > _detectionRange + 5f)
@@ -189,13 +152,13 @@ public partial class HumanEnemy : Human
     /// </summary>
     protected virtual void MoveAround()
     {
-        GD.Print("Moving around player");
+        //*GD.Print("Moving around player");
 
         Vector3 directionToPlayer = GlobalPosition.DirectionTo(_player.GlobalPosition);
         _movementDirection = directionToPlayer.Rotated(Vector3.Up, Mathf.Pi / 2);
 
         float angleToPlayer = directionToPlayer.AngleTo(_movementDirection);
-        if(Mathf.Abs(angleToPlayer - Mathf.Pi) < 0.1f)
+        if (Mathf.Abs(angleToPlayer - Mathf.Pi) < 0.1f)
         {
             _movementDirection = Vector3.Zero;
             // somehow reset to get out of this state if its necessary, but the calculation of exact 180 degrees is not realistic ever
@@ -208,7 +171,7 @@ public partial class HumanEnemy : Human
     /// </summary> <summary>
     protected virtual void Strafe()
     {
-        GD.Print("Strafing");
+        //*GD.Print("Strafing");
         _movementDirection = GlobalPosition.DirectionTo(_player.GlobalPosition);
 
         Vector3 directionToPlayer = GlobalPosition.DirectionTo(_player.GlobalPosition);
@@ -254,12 +217,28 @@ public partial class HumanEnemy : Human
 
     #region INITIALISING ACTIONS
 
+    protected virtual Vector3 GetDirectionToPlayer()
+    {
+        return GlobalPosition.DirectionTo(_player.GlobalPosition);
+    }
+
+    protected virtual Vector3 GetDirectionPerpendicularToPlayer(float sideDirection)
+    {
+        Vector3 directionToPlayer = GlobalPosition.DirectionTo(_player.GlobalPosition);
+        return directionToPlayer.Rotated(Vector3.Up, Mathf.Pi / 2 * sideDirection);
+    }
+
+    protected virtual void QueueRandomAttack()
+    {
+        _queuedAttack = (SwordCombatComponent.SwordAttacks)new Random().Next(4) + 1;
+    }
+
     protected virtual void InitialiseAttack()
     {
         GD.Print("Enemy trying to attack");
 
-        _queuedAttack = SwordCombatComponent.SwordAttacks.OneHandAttack;
-        Attack();
+        QueueRandomAttack();
+        Attack(GetDirectionToPlayer());
         _currentAIState = AIStates.Attack;
     }
 
@@ -278,7 +257,7 @@ public partial class HumanEnemy : Human
     {
         GD.Print("Enemy trying to parry");
 
-        Parry();
+        Parry(GetDirectionToPlayer());
         _currentAIState = AIStates.Parry;
     }
 
@@ -286,7 +265,20 @@ public partial class HumanEnemy : Human
     {
         GD.Print("Enemy trying to dodge roll");
 
-        DodgeRoll();
+        Vector3 rollDirection;
+        if (_defensiveLevel > _aggresiveLevel)
+        {
+            // roll away from the player
+            rollDirection = -GetDirectionToPlayer();
+        }
+        else
+        {
+            // roll to the side of the player
+            float sideDirection = new Random().Next(2) * 2 - 1;
+            rollDirection = GetDirectionPerpendicularToPlayer(sideDirection);
+        }
+
+        DodgeRoll(rollDirection);
         _currentAIState = AIStates.DodgeRoll;
     }
 
@@ -467,7 +459,7 @@ public partial class HumanEnemy : Human
         if (GetDistanceToPlayer() > _attackRange)
         {
             _moveUpWeight = 2.5f;
-            _dodgeRollWeight = 0.3f; // make sure its a roll in direction of the player
+            //_dodgeRollWeight = 0.3f; // make sure its a roll in direction of the player
         }
     }
 
@@ -475,17 +467,65 @@ public partial class HumanEnemy : Human
 
     #region RECOVERING WEIGHTS
 
+    protected const float RECOVERING_MIN_PERCENTAGE = 0.65f;
+
     protected virtual void UpdateRecoveringWeights()
     {
-        if (_attributeComponent.GetHealthPercentage() > 0.65f)
+        //todo not gonna use it yet
+        /*
+        if (_attributeComponent.GetHealthPercentage() > RECOVERING_MIN_PERCENTAGE)
             _tryHealWeight = 0f;
         else
             _tryHealWeight = _defensiveLevel * 1 / _attributeComponent.GetHealthPercentage();
 
-        if (_attributeComponent.GetStaminaPercentage() > 0.65f)
+        if (_attributeComponent.GetStaminaPercentage() > RECOVERING_MIN_PERCENTAGE)
             _tryRecoverWeight = 0f;
         else
             _tryRecoverWeight = _aggresiveLevel * 1 / _attributeComponent.GetStaminaPercentage();
+        */
+    }
+
+    #endregion
+
+    #region TAKE ACTION
+
+    protected virtual void TakeAction()
+    {
+        //GD.Print("anim state: " + CurrentAnimationState);
+        if (CurrentAnimationState != AnimationStates.Idle && CurrentAnimationState != AnimationStates.BlockingConst)
+            return;
+
+        //*GD.Print("distance to player: " + GetDistanceToPlayer() + " action range: " + _actionRange, " attack range: " + _attackRange);
+
+        if (GetDistanceToPlayer() > _actionRange) //todo make him acually move up to his attack range with actions, kinda weird now
+        {
+            _shouldMoveUpToPlayer = true;
+            return;
+        }
+        else
+        {
+            _shouldMoveUpToPlayer = false;
+            if (_currentAIState == AIStates.MoveUp) // in order to not get stuck with taking action of moving, as its not an animation
+                _isTakingAction = false;
+        }
+
+        //?if(_isTakingAction) not sure yet, maybe, but after reseting takingaction for shouldmoveuptoplayer like it is now, and in case of things like strafe and stuff id need a way to reset without relying on animation finished
+        //?return;
+        //!!!! StopBlockConst();
+
+        UpdateBehaviourLevels();
+        UpdateMovementWeigths();
+        UpdateRecoveringWeights();
+
+        foreach (var (weight, action) in _weightedActions)
+        {
+            //*if (weight() > 0f)
+            //*GD.Print(weight() + " : " + action.Method.Name);
+        }
+
+        TakeRandomWeightedAction();
+
+        ZeroOutWeights();
     }
 
     #endregion

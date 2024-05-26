@@ -45,14 +45,26 @@ testowy level z grafika sensowna
 
 
 ocenianie efektywnosci ataku (np biorac kat obrotu miecza do ciala, zeby nie bylo ze atakowany bokiem jest przeciwnik)
+odcinanie konczyn?
 
 ranged ataki przeciwnika
 
-
+!!!! POTENCJALNE BUGI:
 co sie dzieje jak czeka cos an animationFinished, ale robi się stagger ?? i inne takie przerwania
 
 
 
+
+PhysicsDirectSpaceState3D state = PhysicsServer3D.SpaceGetDirectState(GetWorld3D().Space);
+        var parameters = new PhysicsRayQueryParameters3D();
+        parameters.From = weaponHitboxArea.GlobalTransform.Origin;
+        parameters.To = hurtbox.GlobalTransform.Origin;
+        var result = state.IntersectRay(parameters);
+        if(result.Count > 0)
+        {
+        }
+
+coolide_shape moze cos
 
 
 

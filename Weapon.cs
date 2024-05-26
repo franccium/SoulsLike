@@ -6,7 +6,7 @@ public partial class Weapon : Node3D
     public Human WeaponOwner { get; set; }
     protected WeaponAttributesComponent _weaponAttributesComponent;
 
-    protected WeaponHitboxArea _hitboxArea;
+    public WeaponHitboxArea HitboxArea { get; private set; }
 
     protected bool _isOwnedByPlayer = false;
     protected bool _isAttacking = false;
@@ -19,12 +19,12 @@ public partial class Weapon : Node3D
 
     public override void _Ready()
     {
-        _hitboxArea = (WeaponHitboxArea)GetNode<Area3D>("WeaponHitboxArea");
-        _hitboxArea.Weapon = this;
+        HitboxArea = (WeaponHitboxArea)GetNode<Area3D>("WeaponHitboxArea");
+        HitboxArea.Weapon = this;
 
-        _hitboxArea.BodyEntered += OnHitboxAreaBodyEntered;
-        _hitboxArea.AreaEntered += OnHitboxAreaOtherAreaEntered;
-        _hitboxArea.Monitoring = false;
+        HitboxArea.BodyEntered += OnHitboxAreaBodyEntered;
+        HitboxArea.AreaEntered += OnHitboxAreaOtherAreaEntered;
+        HitboxArea.Monitoring = false;
 
         _audioStreamPlayer = GetNode<AudioStreamPlayer>("AudioStreamPlayer");
         _audioStreamPlayer.VolumeDb = -10;
